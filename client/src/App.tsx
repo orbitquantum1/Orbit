@@ -20,6 +20,7 @@ import Developers from "@/pages/developers";
 import Team from "@/pages/team";
 import Roadmap from "@/pages/roadmap";
 import Wallet from "@/pages/wallet";
+import Tracker from "@/pages/tracker";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/team" component={Team} />
       <Route path="/roadmap" component={Roadmap} />
       <Route path="/wallet" component={Wallet} />
+      <Route path="/tracker" component={Tracker} />
       <Route component={NotFound} />
     </Switch>
   );

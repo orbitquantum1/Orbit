@@ -21,6 +21,7 @@ const navLinks = [
   { label: "Research", href: "/research" },
   { label: "Team", href: "/team" },
   { label: "Token", href: "/token" },
+  { label: "Tracker", href: "/tracker" },
   { label: "Merchandise", href: "/merch" },
   { label: "News", href: "/news" },
 ];
