@@ -49,6 +49,11 @@ const coreFeatures = [
     title: "Post-Quantum Cryptography",
     desc: "CRYSTALS-Kyber, SPHINCS+, and hybrid lattice-based schemes securing every agent interaction against quantum threats.",
   },
+  {
+    icon: ShieldCheck,
+    title: "Sovereign by Design",
+    desc: "Quantum-safe transactions. Censorship-resistant settlement. No surveillance, no weaponization, no centralized control over agents or robots.",
+  },
 ];
 
 const protocolStack = [

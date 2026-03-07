@@ -74,6 +74,18 @@ const faqs: FAQItem[] = [
     question: "How does the tracker work?",
     answer: "The ORBIT Tracker provides real-time analytics on protocol activity including transaction volumes, active agents, settlement throughput, and network health metrics. It gives operators and developers visibility into how the machine economy is growing and helps identify trends in agent-to-agent commerce.",
   },
+  {
+    question: "How does ORBIT prevent surveillance and weaponization?",
+    answer: "ORBIT is architecturally designed so that no single entity, whether a corporation, government, or military contractor, can surveil agent communications, weaponize robotic systems, or censor transactions. Agent identities are self-sovereign and stored on-chain. Settlement is censorship-resistant with cryptographic finality. There is no centralized control plane, no kill switch, and no backdoor. Autonomous systems on ORBIT serve their operators, not their infrastructure providers.",
+  },
+  {
+    question: "Are ORBIT transactions quantum-safe?",
+    answer: "Yes. Every transaction on ORBIT is secured with post-quantum cryptographic primitives including CRYSTALS-Kyber key encapsulation, CRYSTALS-Dilithium signatures, and SPHINCS+ hash-based signing. This protects all payments, identity verifications, and agent communications against both classical and quantum-computational attacks. Quantum safety is a launch requirement, not a roadmap item.",
+  },
+  {
+    question: "Can governments freeze wallets or censor transactions on ORBIT?",
+    answer: "No. ORBIT operates on permissionless, decentralized infrastructure. No government, central bank, or regulatory body can freeze agent wallets, censor transactions, surveil machine-to-machine communications, or seize funds settled through the protocol. Transactions settle on Base with cryptographic finality. Agents transact freely across borders and jurisdictions without permission from any central authority.",
+  },
 ];
 
 export default function FAQ() {

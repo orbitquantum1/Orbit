@@ -149,6 +149,32 @@ const researchDomains = [
       },
     ],
   },
+  {
+    title: "Agent Sovereignty and Decentralized Autonomy",
+    subtitle: "Preventing the weaponization and surveillance capture of autonomous systems",
+    items: [
+      {
+        title: "Self-Sovereign Agent Identity",
+        desc: "Non-custodial, on-chain identity infrastructure ensuring no platform provider, government, or corporation can revoke, surveil, or commandeer an agent's identity without the operator's explicit cryptographic consent.",
+        icon: Shield,
+      },
+      {
+        title: "Censorship-Resistant Settlement",
+        desc: "Permissionless transaction infrastructure immune to government currency censorship, wallet freezing, and surveillance of machine-to-machine commerce. Agents transact freely across borders and jurisdictions.",
+        icon: Lock,
+      },
+      {
+        title: "Anti-Weaponization Architecture",
+        desc: "Protocol-level enforcement preventing autonomous robots and AI systems from being redirected for mass surveillance, autonomous weapons deployment, or warrantless monitoring without human authorization.",
+        icon: Shield,
+      },
+      {
+        title: "Zero-Knowledge Compliance",
+        desc: "Privacy-preserving payment proofs enabling agents to demonstrate authorization and solvency without exposing identity, location, counterparties, or operational context to any third party, including governments.",
+        icon: Lock,
+      },
+    ],
+  },
 ];
 
 export default function Research() {

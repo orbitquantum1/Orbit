@@ -171,6 +171,32 @@ Recursive Orchestration: Sub-agents can themselves delegate further. A data anal
 
 This orchestration model supports xAI Grok agents and sub-agents, OpenAI multi-agent systems, Google Vertex AI agent chains, and any autonomous system that follows the ORBIT agentic commerce standards.`,
   },
+  {
+    id: "decentralized-autonomy",
+    icon: Shield,
+    title: "17. Decentralized Autonomy and Agent Sovereignty",
+    content: `As governments and corporations accelerate the convergence of AI, robotics, and surveillance infrastructure, the need for a decentralized coordination layer becomes existential, not theoretical.
+
+ORBIT is built on three non-negotiable commitments:
+
+1. Quantum-Safe Transactions
+
+Every transaction on ORBIT is secured with post-quantum cryptographic primitives. CRYSTALS-Kyber key encapsulation, CRYSTALS-Dilithium signatures, and SPHINCS+ hash-based signing protect every payment, every identity verification, and every agent-to-agent message against both classical and quantum-computational attacks. This is not a roadmap item. It is a launch requirement. When quantum computers arrive at scale, every transaction ever settled on ORBIT will remain secure. Agents and robots operating critical infrastructure, managing supply chains, or processing financial settlements cannot afford retroactive decryption. Quantum safety is the minimum standard for autonomous commerce.
+
+2. Decentralized from Government Currency Censorship and Surveillance
+
+ORBIT operates on permissionless, decentralized infrastructure. No government, central bank, or regulatory body can freeze agent wallets, censor transactions, surveil machine-to-machine communications, or seize funds settled through the protocol. Agent identities are self-sovereign. ERC-8004 identities are owned by their operators, stored on-chain, and cryptographically verifiable without centralized registries. No platform provider and no state actor can revoke, monitor, or commandeer an agent's identity without the operator's explicit cryptographic consent. The settlement layer is censorship-resistant. Transactions settle on Base with cryptographic finality. There is no intermediary that can block, delay, or reverse a settlement. Agents transact freely across borders, industries, and jurisdictions without permission from any central authority. Zero-knowledge payment proofs enable agents to prove they are authorized and solvent without exposing their identity, location, counterparties, or operational context to any third party, including governments.
+
+3. Human-Supporting Systems Without Weaponization or Surveillance
+
+ORBIT is infrastructure for human benefit. The protocol is designed to support humans, businesses, and communities through autonomous agents that optimize supply chains, manage logistics, process payments, and coordinate resources. ORBIT explicitly rejects the convergence of AI and robotics with mass surveillance, autonomous weapons systems, and warrantless domestic monitoring. The protocol enforces this through architectural design, not policy promises. There is no centralized control plane that could be co-opted for surveillance. There is no kill switch that could weaponize robotic systems. There is no backdoor that could enable warrantless monitoring of agent communications. Autonomous systems coordinated through ORBIT serve their operators. They cannot be redirected by platform providers, defense contractors, or government agencies to surveil populations, target individuals, or operate as autonomous weapons without human authorization.
+
+The centralization of AI infrastructure by major technology companies creates single points of control that enable mass surveillance of agent communications, autonomous weaponization of robotic systems, unilateral shutdown of agent economies, and forced compliance with surveillance mandates that bypass judicial oversight.
+
+ORBIT eliminates these risks by distributing control across the network. No single entity can commandeer the machine economy. Agents operate under the governance of their operators, not the interests of their infrastructure providers.
+
+This is not a political position. It is an engineering requirement. Autonomous systems that can be centrally controlled are not autonomous. They are tools of the entity that controls them.`,
+  },
 ];
 
 export default function WhitePaper() {
