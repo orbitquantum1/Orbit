@@ -55,6 +55,7 @@ const navGroups: NavGroup[] = [
       { label: "Team", href: "/team" },
       { label: "News", href: "/news" },
       { label: "Merchandise", href: "/merch" },
+      { label: "Education", href: "/education" },
     ],
   },
 ];

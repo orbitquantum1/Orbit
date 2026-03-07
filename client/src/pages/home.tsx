@@ -207,7 +207,7 @@ function GitHubFeedSection() {
 export default function Home() {
   return (
     <div className="min-h-screen">
-      <section className="relative min-h-screen flex items-center overflow-hidden" data-testid="section-hero">
+      <section className="relative min-h-[100dvh] flex items-center overflow-hidden" data-testid="section-hero">
         <div className="absolute inset-0 bg-black">
           <img
             src="/images/hero-space.png"
@@ -218,11 +218,11 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-32 pb-16 sm:pb-20 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-32 pb-12 sm:pb-20 w-full">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <div>
               <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono tracking-wider border border-white/10 bg-white/5 text-white/60 backdrop-blur-sm mb-8" data-testid="badge-hero-tag">
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono tracking-wider border border-white/10 bg-white/5 text-white/60 backdrop-blur-sm mb-6 sm:mb-8" data-testid="badge-hero-tag">
                   <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
                   PROTOCOL ACTIVE
                 </span>
@@ -230,7 +230,7 @@ export default function Home() {
 
               <motion.h1
                 initial="hidden" animate="visible" variants={fadeUp} custom={1}
-                className="font-display font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-[1.05] text-white mb-6"
+                className="font-display font-bold text-[1.75rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-tight leading-[1.1] text-white mb-5 sm:mb-6"
               >
                 The Transaction
                 <br />
@@ -247,20 +247,20 @@ export default function Home() {
 
               <motion.p
                 initial="hidden" animate="visible" variants={fadeUp} custom={2}
-                className="text-base lg:text-lg text-white/50 max-w-lg leading-relaxed mb-10"
+                className="text-sm sm:text-base lg:text-lg text-white/50 max-w-lg leading-relaxed mb-8 sm:mb-10"
               >
                 ORBIT provides the foundational transaction layer for the AI agent and robotics-driven economy, where autonomous systems identify, verify, transact, and collaborate at scale.
               </motion.p>
 
               <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="flex items-center gap-3 flex-wrap">
                 <Link href="/whitepaper">
-                  <Button size="lg" data-testid="button-read-whitepaper">
+                  <Button size="lg" className="w-full sm:w-auto" data-testid="button-read-whitepaper">
                     Read White Paper
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
                 <Link href="/registry">
-                  <Button size="lg" variant="outline" className="backdrop-blur-sm bg-white/5 border-white/15 text-white" data-testid="button-explore-registry">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto backdrop-blur-sm bg-white/5 border-white/15 text-white" data-testid="button-explore-registry">
                     Orbit Marketplace
                   </Button>
                 </Link>
@@ -271,7 +271,7 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1.2, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="flex justify-center"
+              className="hidden sm:flex justify-center"
               style={{ isolation: "isolate" }}
             >
               <div className="relative" style={{ mixBlendMode: "screen" }}>
@@ -579,11 +579,11 @@ export default function Home() {
                   Every agent wallet transaction, every marketplace service, every X402 payment, every cross-chain bridge, every fiat settlement. $ORB is the common denominator across the entire machine economy, driving utility at every point where autonomous systems exchange value.
                 </p>
               </div>
-              <div className="flex items-center gap-3 flex-wrap lg:flex-nowrap">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 {["Identity", "Wallets", "Payments", "Registry", "Staking"].map((item) => (
                   <span
                     key={item}
-                    className="text-xs font-mono text-foreground/70 px-3 py-1.5 rounded-md bg-card border border-border/50 whitespace-nowrap"
+                    className="text-[10px] sm:text-xs font-mono text-foreground/70 px-2 sm:px-3 py-1 sm:py-1.5 rounded-md bg-card border border-border/50 whitespace-nowrap"
                   >
                     {item}
                   </span>
@@ -677,14 +677,14 @@ export default function Home() {
             className="mb-12"
           >
             <span className="font-mono text-xs tracking-widest text-orange-500/80 uppercase mb-3 block">
-              ORBIT Wallet
+              Thesis
             </span>
             <h2 className="font-display font-bold text-3xl lg:text-4xl tracking-tight mb-3">
-              One wallet standard.{" "}
-              <span className="dark:text-gradient text-gradient-light">Every participant.</span>
+              AI agents and robots will{" "}
+              <span className="dark:text-gradient text-gradient-light">outnumber people.</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl text-base lg:text-lg leading-relaxed">
-              The ORBIT Wallet is designed for every participant in the machine economy: humans, AI agents, robots, enterprises, military, and government. Each wallet type is purpose-built for its operational context.
+              Within this decade, autonomous AI agents and robotic systems will outnumber humans on the internet. They will need to transact, coordinate, and settle with each other at machine speed, without human intermediation. ORBIT is the protocol layer that makes this possible, providing wallets, identity, payments, and settlement for every participant in the machine economy.
             </p>
           </motion.div>
 
@@ -929,25 +929,25 @@ export default function Home() {
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/75 to-black/50" />
-            <div className="relative px-5 py-12 sm:px-8 sm:py-16 lg:px-16 lg:py-24">
+            <div className="relative px-5 py-10 sm:px-8 sm:py-16 lg:px-16 lg:py-24">
               <span className="font-mono text-xs tracking-widest text-orange-500/80 uppercase mb-4 block">
                 Join the Network
               </span>
-              <h2 className="font-display font-bold text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight mb-4 max-w-xl" data-testid="text-cta-heading">
+              <h2 className="font-display font-bold text-xl sm:text-3xl lg:text-4xl text-white tracking-tight mb-4 max-w-xl" data-testid="text-cta-heading">
                 Enter the agent economy.
               </h2>
-              <p className="text-white/45 max-w-lg text-base lg:text-lg mb-8 leading-relaxed">
+              <p className="text-white/45 max-w-lg text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 leading-relaxed">
                 As autonomous agents grow from thousands to billions, they will all need identity, wallets, payments, and coordination. ORBIT is the protocol that makes it possible.
               </p>
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <Link href="/registry">
-                  <Button size="lg" data-testid="button-cta-registry">
+                  <Button size="lg" className="w-full sm:w-auto" data-testid="button-cta-registry">
                     Explore Registry
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
                 <Link href="/merch">
-                  <Button size="lg" variant="outline" className="backdrop-blur-sm bg-white/5 border-white/15 text-white" data-testid="button-cta-merch">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto backdrop-blur-sm bg-white/5 border-white/15 text-white" data-testid="button-cta-merch">
                     Shop Merch
                   </Button>
                 </Link>

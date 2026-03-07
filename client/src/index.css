@@ -148,17 +148,23 @@
   html {
     overflow-x: hidden;
     -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
   }
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
   }
 
   img {
     max-width: 100%;
     height: auto;
+  }
+
+  a, button {
+    touch-action: manipulation;
   }
 }
 
@@ -217,6 +223,14 @@
   .hover-elevate:hover:not(.no-default-hover-elevate)::after,
   .active-elevate:active:not(.no-default-active-elevate)::after {
     background-color: var(--elevate-1);
+  }
+
+  .hover-elevate:not(.no-default-hover-elevate) {
+    transition: transform 0.15s ease;
+  }
+
+  .hover-elevate:active:not(.no-default-hover-elevate) {
+    transform: scale(0.98);
   }
 
   .hover-elevate-2:hover:not(.no-default-hover-elevate)::after,

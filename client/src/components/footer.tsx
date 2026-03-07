@@ -79,6 +79,15 @@ export function Footer() {
             <h4 className="font-display font-semibold text-sm tracking-wider uppercase mb-4 text-foreground">
               Community
             </h4>
+            <ul className="space-y-3 mb-5">
+              <li>
+                <Link href="/education">
+                  <span className="text-sm text-muted-foreground cursor-pointer transition-colors" data-testid="link-footer-education">
+                    Education
+                  </span>
+                </Link>
+              </li>
+            </ul>
             <div className="flex items-center gap-3 flex-wrap">
               <a href="#" className="w-11 h-11 sm:w-9 sm:h-9 rounded-md bg-card dark:bg-white/5 border border-border/50 flex items-center justify-center text-muted-foreground transition-colors" data-testid="link-twitter">
                 <SiX className="w-4 h-4" />
