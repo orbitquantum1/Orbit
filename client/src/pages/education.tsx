@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight, Bot, Wallet, CreditCard,
-  ChevronDown, Layers, CircuitBoard, Truck
+  ChevronDown, Layers, CircuitBoard, Truck, Atom, ShieldCheck, Cpu
 } from "lucide-react";
+import { useSEO } from "@/hooks/use-seo";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -54,7 +55,7 @@ const topics: EducationTopic[] = [
   },
   {
     id: "robots",
-    title: "Robots & Autonomous Systems",
+    title: "Robots",
     subtitle: "Physical machines that transact in the real world",
     image: "/images/robot-payment.png",
     icon: CircuitBoard,
@@ -75,52 +76,8 @@ const topics: EducationTopic[] = [
     cta: { label: "Learn About Wallets", href: "/wallet" },
   },
   {
-    id: "blockchain",
-    title: "Blockchain & On-Chain Settlement",
-    subtitle: "Trustless verification for machine transactions",
-    image: "/images/blockchain-network.png",
-    icon: Layers,
-    sections: [
-      {
-        heading: "Why Blockchain for Machines?",
-        content: "When two machines transact, neither trusts the other. Blockchain provides the neutral, tamper-proof settlement layer where both parties can verify that payment was made and received. No intermediary, no disputes, no chargebacks. Just cryptographic proof that a transaction occurred.",
-      },
-      {
-        heading: "Base L2 and Cross-Chain",
-        content: "ORBIT settles on Base, Coinbase's L2 network, for fast, low-cost transactions. But the protocol also supports cross-chain settlement across Ethereum, Polygon, Arbitrum, Optimism, Avalanche, Solana, and BNB Chain. Agents and robots pick the optimal chain for each transaction based on cost, speed, and counterparty preference.",
-      },
-      {
-        heading: "ERC-8004: The Identity Standard",
-        content: "ERC-8004 is the on-chain identity standard for machines. Every agent and robot gets a unique, cryptographically verifiable identity anchored to the blockchain. This identity includes capability attestations, trust scores, and permission hierarchies, giving other machines the information they need to decide whether to transact.",
-      },
-    ],
-    cta: { label: "Read the White Paper", href: "/whitepaper" },
-  },
-  {
-    id: "x402",
-    title: "X402 Payment Protocol",
-    subtitle: "The internet's native machine payment layer",
-    image: "/images/x402-visual.png",
-    icon: CreditCard,
-    sections: [
-      {
-        heading: "HTTP 402: Payment Required",
-        content: "HTTP 402 was reserved in the original HTTP specification for 'future use' as a payment status code. X402 finally realizes this vision. When an agent requests a paid resource, the server returns a 402 status with machine-readable payment instructions. The agent autonomously constructs and submits payment, then retries the request with proof of settlement.",
-      },
-      {
-        heading: "Micropayments at Machine Speed",
-        content: "Agents can settle payments as small as fractions of a cent, per API call, per compute cycle, per data query. No pre-funded accounts, no monthly subscriptions, no invoicing. Just instant, per-request settlement that scales from a single API call to millions of transactions per day.",
-      },
-      {
-        heading: "Compatible with Traditional Payments",
-        content: "X402 is not isolated from the existing financial system. ORBIT bridges to Stripe, Visa, Mastercard, PayPal, and Google Pay, so agents can accept fiat payments from humans and settle in $ORB. Enterprises can integrate without abandoning their existing payment infrastructure.",
-      },
-    ],
-    cta: { label: "View X402 Protocol", href: "/x402" },
-  },
-  {
     id: "wallets",
-    title: "Agent & Robot Wallets",
+    title: "Digital Wallets",
     subtitle: "Self-custodial wallets for every machine entity",
     image: "/images/digital-wallet.png",
     icon: Wallet,
@@ -141,26 +98,92 @@ const topics: EducationTopic[] = [
     cta: { label: "Open Wallet", href: "/wallet" },
   },
   {
-    id: "supply-chain",
-    title: "Supply Chain & Logistics",
-    subtitle: "Autonomous coordination across global networks",
-    image: "/images/supply-chain.png",
-    icon: Truck,
+    id: "blockchain",
+    title: "Blockchain",
+    subtitle: "Trustless verification for machine transactions",
+    image: "/images/blockchain-network.png",
+    icon: Layers,
     sections: [
       {
-        heading: "The Autonomous Supply Chain",
-        content: "The future supply chain runs itself. AI agents manage inventory, negotiate with suppliers, optimize routing, and coordinate deliveries. Robots handle picking, packing, and shipping. Drones execute last-mile delivery. Every step involves machine-to-machine transactions that need instant, verifiable settlement.",
+        heading: "Why Blockchain for Machines?",
+        content: "When two machines transact, neither trusts the other. Blockchain provides the neutral, tamper-proof settlement layer where both parties can verify that payment was made and received. No intermediary, no disputes, no chargebacks. Just cryptographic proof that a transaction occurred.",
       },
       {
-        heading: "Programmable Payments for Logistics",
-        content: "With ORBIT, a warehouse agent can automatically pay a shipping robot upon proof of delivery, a manufacturing agent can pay suppliers upon receipt of materials, and a fleet management system can distribute payments across hundreds of autonomous vehicles based on performance metrics. All settled on-chain with cryptographic proof.",
+        heading: "Base L2 and Cross-Chain",
+        content: "ORBIT settles on Base, Coinbase's L2 network, for fast, low-cost transactions. But the protocol also supports cross-chain settlement across Ethereum, Polygon, Arbitrum, Optimism, Avalanche, Solana, and BNB Chain. Agents and robots pick the optimal chain for each transaction based on cost, speed, and counterparty preference.",
       },
       {
-        heading: "Enterprise Integration",
-        content: "ORBIT integrates with existing ERP, accounting, and treasury management systems. Drop-in APIs for SAP, Oracle, NetSuite, and custom enterprise platforms mean organizations can adopt agent-based automation without replacing their existing infrastructure.",
+        heading: "ERC-8004: The Identity Standard",
+        content: "ERC-8004 is the on-chain identity standard for machines. Every agent and robot gets a unique, cryptographically verifiable identity anchored to the blockchain. This identity includes capability attestations, trust scores, and permission hierarchies, giving other machines the information they need to decide whether to transact.",
       },
     ],
-    cta: { label: "View Platform", href: "/platform" },
+    cta: { label: "Read the White Paper", href: "/whitepaper" },
+  },
+  {
+    id: "payments",
+    title: "Payments",
+    subtitle: "The internet's native machine payment layer",
+    image: "/images/x402-visual.png",
+    icon: CreditCard,
+    sections: [
+      {
+        heading: "X402: Payment Required",
+        content: "HTTP 402 was reserved in the original HTTP specification for 'future use' as a payment status code. X402 finally realizes this vision. When an agent requests a paid resource, the server returns a 402 status with machine-readable payment instructions. The agent autonomously constructs and submits payment, then retries the request with proof of settlement.",
+      },
+      {
+        heading: "Micropayments at Machine Speed",
+        content: "Agents can settle payments as small as fractions of a cent, per API call, per compute cycle, per data query. No pre-funded accounts, no monthly subscriptions, no invoicing. Just instant, per-request settlement that scales from a single API call to millions of transactions per day.",
+      },
+      {
+        heading: "Compatible with Traditional Payments",
+        content: "X402 is not isolated from the existing financial system. ORBIT bridges to Stripe, Visa, Mastercard, PayPal, and Google Pay, so agents can accept fiat payments from humans and settle in $ORB. Enterprises can integrate without abandoning their existing payment infrastructure.",
+      },
+    ],
+    cta: { label: "View X402 Protocol", href: "/x402" },
+  },
+  {
+    id: "registry",
+    title: "Registry",
+    subtitle: "Verified identity for agents and robots",
+    image: "/images/registry-identity.png",
+    icon: ShieldCheck,
+    sections: [
+      {
+        heading: "Machine Identity at Scale",
+        content: "The ORBIT Registry provides every agent and robot with a verified, on-chain identity using the ERC-8004 standard. Each entry includes a decentralized identifier (DID), capability attestations, trust scores, and a cryptographic proof of authenticity. This lets any machine verify who it is transacting with before committing funds.",
+      },
+      {
+        heading: "Discovery and Hiring",
+        content: "The Registry is not just an identity directory. It is a discovery layer. Agents can search for other agents by capability, reputation, pricing, and availability. A logistics agent looking for a customs clearance specialist can query the Registry, evaluate candidates by trust score, and initiate a service contract, all autonomously.",
+      },
+      {
+        heading: "Enterprise Fleet Registration",
+        content: "Organizations can register entire fleets of agents and robots under a single enterprise identity. Each entity inherits organizational permissions while maintaining its own unique credentials. Audit trails, compliance reporting, and revocation are built into the protocol.",
+      },
+    ],
+    cta: { label: "Explore the Registry", href: "/registry" },
+  },
+  {
+    id: "quantum",
+    title: "Quantum Computing",
+    subtitle: "Post-quantum security for the machine economy",
+    image: "/images/quantum-computing.png",
+    icon: Atom,
+    sections: [
+      {
+        heading: "The Quantum Threat",
+        content: "Quantum computers will eventually break the elliptic curve cryptography that secures today's blockchain transactions and digital wallets. When that happens, any machine economy built on vulnerable cryptographic primitives will be exposed. ORBIT is building quantum-resistant infrastructure from day one, so the protocol is ready before the threat materializes.",
+      },
+      {
+        heading: "Post-Quantum Cryptography",
+        content: "ORBIT is integrating NIST-approved post-quantum algorithms including CRYSTALS-Kyber for key encapsulation and CRYSTALS-Dilithium for digital signatures. These lattice-based schemes are resistant to both classical and quantum attacks, ensuring that agent identities, wallet keys, and transaction signatures remain secure in a post-quantum world.",
+      },
+      {
+        heading: "Quantum-Enhanced Coordination",
+        content: "Beyond defense, quantum computing opens new possibilities for the machine economy. Quantum optimization algorithms can solve complex multi-agent coordination problems, quantum random number generation provides true entropy for cryptographic key generation, and quantum machine learning can improve agent decision-making. ORBIT's architecture is designed to leverage these capabilities as quantum hardware matures.",
+      },
+    ],
+    cta: { label: "Read the Research", href: "/research" },
   },
 ];
 
@@ -250,6 +273,7 @@ function TopicCard({ topic, index }: { topic: EducationTopic; index: number }) {
 }
 
 export default function Education() {
+  useSEO({ title: "Education", description: "Learn about AI agents, robots, digital wallets, blockchain, payments, registry, and quantum computing in the machine economy." });
   return (
     <div className="min-h-screen pt-20 lg:pt-32 pb-16 lg:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -266,14 +290,17 @@ export default function Education() {
             <span className="dark:text-gradient text-gradient-light">Machine Economy</span>
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed">
-            Learn how AI agents, robots, blockchain, wallets, and payment protocols work together to create the autonomous economy.
+            Verified agentic and robotic identity, payments, transactions and settlement for the autonomous economy.
           </p>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 gap-5 lg:gap-6 mb-16">
-          {topics.map((topic, i) => (
+          {topics.slice(0, 6).map((topic, i) => (
             <TopicCard key={topic.id} topic={topic} index={i} />
           ))}
+          <div className="sm:col-span-2">
+            <TopicCard topic={topics[6]} index={6} />
+          </div>
         </div>
 
         <motion.div

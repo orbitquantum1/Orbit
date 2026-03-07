@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useSEO } from "@/hooks/use-seo";
 import { ExternalLink } from "lucide-react";
 
 const newsItems = [
@@ -65,6 +66,7 @@ const newsItems = [
 ];
 
 export default function News() {
+  useSEO({ title: "News", description: "Industry insights and citations confirming the emergence of the machine economy. AI agents, robots, and autonomous commerce." });
   return (
     <div className="min-h-screen pt-20 lg:pt-32 pb-16 lg:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

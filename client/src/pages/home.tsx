@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Shield, Cpu, Globe, Zap, Satellite, Lock, Wallet, CreditCard, Fingerprint, Bot, Link2, Network, Building2, Swords, Landmark, User, CircuitBoard, Users, Brain, ShieldCheck, GitCommit, ExternalLink } from "lucide-react";
 import { SiGithub } from "react-icons/si";
+import { useSEO } from "@/hooks/use-seo";
+import { WaitlistForm } from "@/components/waitlist";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -128,7 +130,7 @@ function GitHubFeedSection() {
             Development Activity
           </h2>
           <p className="text-muted-foreground max-w-lg mx-auto text-sm leading-relaxed">
-            Real-time commit feed from the ORBIT Protocol repository on GitHub.
+            Real-time commit feed from the ORBIT platform repository on GitHub.
           </p>
         </motion.div>
 
@@ -205,6 +207,7 @@ function GitHubFeedSection() {
 }
 
 export default function Home() {
+  useSEO({ title: "ORBIT", description: "A foundational commerce layer for AI agents and robots, where autonomous systems identify, verify, transact, and collaborate with each other at scale." });
   return (
     <div className="min-h-screen">
       <section className="relative min-h-[100dvh] flex items-center overflow-hidden" data-testid="section-hero">
@@ -249,7 +252,7 @@ export default function Home() {
                 initial="hidden" animate="visible" variants={fadeUp} custom={2}
                 className="text-sm sm:text-base lg:text-lg text-white/50 max-w-lg leading-relaxed mb-8 sm:mb-10"
               >
-                ORBIT provides the foundational transaction layer for the AI agent and robotics-driven economy, where autonomous systems identify, verify, transact, and collaborate at scale.
+                A foundational commerce layer for AI agents and robots, where autonomous systems identify, verify, transact, and collaborate with each other at scale.
               </motion.p>
 
               <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="flex items-center gap-3 flex-wrap">
@@ -939,6 +942,10 @@ export default function Home() {
               <p className="text-white/45 max-w-lg text-sm sm:text-base lg:text-lg mb-6 sm:mb-8 leading-relaxed">
                 As autonomous agents grow from thousands to billions, they will all need identity, wallets, payments, and coordination. ORBIT is the protocol that makes it possible.
               </p>
+              <div className="mb-6">
+                <p className="text-xs font-mono text-white/30 tracking-wider uppercase mb-3">Get early access</p>
+                <WaitlistForm />
+              </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <Link href="/registry">
                   <Button size="lg" className="w-full sm:w-auto" data-testid="button-cta-registry">

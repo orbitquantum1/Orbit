@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useSEO } from "@/hooks/use-seo";
 import { Wallet, CreditCard, Network, Bot, Shield, Lock, Cpu, Globe, Landmark, Building2, Swords, CircuitBoard, User, CheckCircle2, Circle } from "lucide-react";
 
 const milestones = [
@@ -121,6 +122,7 @@ const milestones = [
 ];
 
 export default function Roadmap() {
+  useSEO({ title: "Roadmap", description: "ORBIT development milestones. Track progress across wallets, X402 protocol, settlement, agent collaboration, and post-quantum cryptography." });
   const totalItems = milestones.reduce((sum, m) => sum + m.items.length, 0);
   const doneItems = milestones.reduce((sum, m) => sum + m.items.filter((i) => i.done).length, 0);
   const pct = Math.round((doneItems / totalItems) * 100);
@@ -141,7 +143,7 @@ export default function Roadmap() {
             <span className="dark:text-gradient text-gradient-light">infrastructure.</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed mb-8">
-            ORBIT is being built in the open. No timelines, no hype cycles. Each milestone ships when it is ready. The checklist below reflects what exists today and what is actively in development.
+            ORBIT is being built in the open. No timelines, no hype cycles. Each milestone ships when it is ready. The roadmap below reflects what exists today and what is actively in development.
           </p>
 
           <div className="flex items-center gap-4 mb-2">

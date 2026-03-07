@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { GitCommit, GitBranch, GitMerge, GitPullRequest, Shield, Cpu, Zap, Database, Lock, Globe, Bot, Wallet, CreditCard, Fingerprint, Network, Server, FileCode, Package, Terminal, CheckCircle2, AlertCircle, ArrowUpRight, ChevronDown, BarChart3 } from "lucide-react";
 import { SiGithub } from "react-icons/si";
+import { useSEO } from "@/hooks/use-seo";
 
 type ActivityType = "commit" | "merge" | "deploy" | "test" | "security" | "infra" | "protocol" | "release";
 
@@ -472,6 +473,7 @@ function ActivityCard({ entry, index }: { entry: ActivityEntry; index: number })
 }
 
 export default function Tracker() {
+  useSEO({ title: "Live Tracker", description: "Real-time development feed from the ORBIT platform. Every commit, merge, deploy, and security update." });
   const protocolActivity = useMemo(() => generateProtocolActivity(), []);
 
   const { data: githubCommits } = useQuery<any[]>({
@@ -518,10 +520,10 @@ export default function Tracker() {
             Development Activity
           </span>
           <h1 className="font-display font-bold text-2xl sm:text-4xl lg:text-5xl text-white tracking-tight mb-4" data-testid="text-tracker-title">
-            Protocol Tracker
+            Live Tracker
           </h1>
           <p className="text-sm text-white/40 max-w-xl leading-relaxed">
-            Real-time development feed from the ORBIT Protocol engineering team. Every commit, merge, deploy, and security update.
+            Real-time development feed from the ORBIT platform engineering team. Every commit, merge, deploy, and security update.
           </p>
         </motion.div>
 

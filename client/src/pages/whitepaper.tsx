@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useSEO } from "@/hooks/use-seo";
 import { FileText, Shield, MessageSquare, DollarSign, Building2, Server, Satellite, Lock, Coins, BarChart3, Network, CreditCard, GitBranch } from "lucide-react";
 
 const sections = [
@@ -173,6 +174,7 @@ This orchestration model supports xAI Grok agents and sub-agents, OpenAI multi-a
 ];
 
 export default function WhitePaper() {
+  useSEO({ title: "White Paper", description: "Technical specification for ORBIT: the transaction and coordination layer for autonomous AI agents, robots, and the machine economy." });
   return (
     <div className="min-h-screen pt-24 lg:pt-32 pb-24">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">

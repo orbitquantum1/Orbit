@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Coins, ArrowRight, Shield, Cpu, DollarSign, Vote, Server, Clock, ExternalLink, Copy, Link2, Network, TrendingUp, Layers, Building2, Landmark, Wallet, Rocket, Zap } from "lucide-react";
+import { useSEO } from "@/hooks/use-seo";
 
 const tokenUtilities = [
   {
@@ -47,6 +48,7 @@ const revenueStreams = [
 ];
 
 export default function Token() {
+  useSEO({ title: "$ORB Token", description: "Fair launch on Base via Bankrbot. No presale, no VC, no insider rounds. The native token powering the machine economy." });
   return (
     <div className="min-h-screen pt-20 lg:pt-32 pb-16 lg:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -136,7 +138,7 @@ export default function Token() {
           </div>
         </motion.section>
 
-        <section className="mb-16 lg:mb-24" data-testid="section-token-supply">
+        <section id="supply" className="mb-16 lg:mb-24" data-testid="section-token-supply">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -193,7 +195,7 @@ export default function Token() {
           </div>
         </section>
 
-        <section className="mb-16 lg:mb-24" data-testid="section-token-utility">
+        <section id="utility" className="mb-16 lg:mb-24" data-testid="section-token-utility">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -251,7 +253,7 @@ export default function Token() {
           </div>
         </section>
 
-        <section data-testid="section-stablecoin">
+        <section id="stablecoin" data-testid="section-stablecoin">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

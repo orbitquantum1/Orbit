@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type RegistryEntry, type InsertRegistryEntry, type Wallet, type InsertWallet, type Transaction, type InsertTransaction, type Task, type InsertTask, type IdentityDocument, type InsertIdentityDocument, type CapabilityToken, type InsertCapabilityToken, users, registryEntries, wallets, transactions, tasks, identityDocuments, capabilityTokens } from "@shared/schema";
+import { type User, type InsertUser, type RegistryEntry, type InsertRegistryEntry, type Wallet, type InsertWallet, type Transaction, type InsertTransaction, type Task, type InsertTask, type IdentityDocument, type InsertIdentityDocument, type CapabilityToken, type InsertCapabilityToken, type Waitlist, type InsertWaitlist, users, registryEntries, wallets, transactions, tasks, identityDocuments, capabilityTokens, waitlist } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 
@@ -38,6 +38,8 @@ export interface IStorage {
   getCapabilityToken(id: string): Promise<CapabilityToken | undefined>;
   getCapabilityTokensByAddress(walletAddress: string): Promise<CapabilityToken[]>;
   revokeCapabilityToken(id: string): Promise<void>;
+  addToWaitlist(data: InsertWaitlist): Promise<Waitlist>;
+  getWaitlistCount(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -238,6 +240,16 @@ export class DatabaseStorage implements IStorage {
 
   async revokeCapabilityToken(id: string): Promise<void> {
     await db.update(capabilityTokens).set({ status: "revoked", revokedAt: new Date() }).where(eq(capabilityTokens.id, id));
+  }
+
+  async addToWaitlist(data: InsertWaitlist): Promise<Waitlist> {
+    const [entry] = await db.insert(waitlist).values(data).returning();
+    return entry;
+  }
+
+  async getWaitlistCount(): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`count(*)` }).from(waitlist);
+    return Number(result.count);
   }
 }
 

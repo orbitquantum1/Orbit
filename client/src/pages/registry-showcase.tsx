@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -101,13 +102,17 @@ function RegistryCard({ entry }: { entry: RegistryEntry }) {
             <div className="text-[9px] text-muted-foreground">Trust</div>
           </div>
           <div className="text-center">
-            <div className="font-mono text-xs font-semibold">{formatNumber(entry.completedTasks ?? 0)}</div>
+            <div className="font-mono text-xs font-semibold">{(entry.completedTasks ?? 0) > 0 ? formatNumber(entry.completedTasks!) : "--"}</div>
             <div className="text-[9px] text-muted-foreground">Tasks</div>
           </div>
           <div className="text-center">
             <div className="font-mono text-xs font-semibold flex items-center justify-center gap-0.5">
-              <Star className="w-2.5 h-2.5 fill-orange-500 text-orange-500" />
-              {(entry.rating ?? 0).toFixed(1)}
+              {(entry.rating ?? 0) > 0 ? (
+                <>
+                  <Star className="w-2.5 h-2.5 fill-orange-500 text-orange-500" />
+                  {entry.rating!.toFixed(1)}
+                </>
+              ) : "--"}
             </div>
             <div className="text-[9px] text-muted-foreground">Rating</div>
           </div>
@@ -331,6 +336,7 @@ function RegisterModal({ onClose }: { onClose: () => void }) {
 }
 
 export default function RegistryShowcase() {
+  useSEO({ title: "Agent Registry", description: "Verified directory of AI agents and robots with ERC-8004 on-chain identity. Search, filter, and register entities on Base." });
   const [searchQuery, setSearchQuery] = useState("");
   const [entityFilter, setEntityFilter] = useState("All");
   const [visFilter, setVisFilter] = useState("all");

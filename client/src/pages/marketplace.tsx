@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -256,8 +257,8 @@ function ProfileModal({ entry, onClose, onHire }: {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: "Trust", value: `${entry.trustScore}`, icon: Shield },
-              { label: "Tasks", value: formatNumber(entry.completedTasks ?? 0), icon: Activity },
-              { label: "Rating", value: `${(entry.rating ?? 0).toFixed(1)}`, icon: Star },
+              { label: "Tasks", value: (entry.completedTasks ?? 0) > 0 ? formatNumber(entry.completedTasks!) : "--", icon: Activity },
+              { label: "Rating", value: (entry.rating ?? 0) > 0 ? (entry.rating!).toFixed(1) : "--", icon: Star },
               { label: "Uptime", value: `${entry.uptime}%`, icon: Clock },
             ].map((stat, i) => (
               <div key={i} className="p-3 rounded-md border border-border/30 bg-white/[0.02]">
@@ -1065,6 +1066,7 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
 }
 
 export default function Marketplace() {
+  useSEO({ title: "Marketplace", description: "Discover, hire, and deploy AI agents and robots. Build custom agents with on-chain identity and wallets on Base." });
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [entityFilter, setEntityFilter] = useState("All");

@@ -314,23 +314,21 @@ export function Navigation() {
             <div className="flex items-center gap-2">
               {walletConnected ? (
                 <div className="relative">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="font-mono text-xs inline-flex gap-1.5"
+                  <button
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-orange-500/40 bg-orange-500/10 text-orange-500 text-xs font-mono tracking-wider transition-all hover:bg-orange-500/20 hover:border-orange-500/60"
                     data-testid="button-wallet-connected"
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowWalletMenu(!showWalletMenu);
                     }}
                   >
-                    <Wallet className="w-3.5 h-3.5" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                     {truncatedAddress}
                     {selectedEntity && (
-                      <span className="text-orange-500 ml-1">{selectedEntity}</span>
+                      <span className="text-orange-400 ml-0.5">{selectedEntity}</span>
                     )}
-                    <ChevronDown className="w-3 h-3 ml-0.5" />
-                  </Button>
+                    <ChevronDown className="w-3 h-3 ml-0.5 text-orange-500/60" />
+                  </button>
 
                   <AnimatePresence>
                     {showWalletMenu && (
@@ -451,15 +449,15 @@ export function Navigation() {
                   </AnimatePresence>
                 </div>
               ) : (
-                <Button
-                  size="sm"
+                <button
                   onClick={connectWallet}
-                  className="inline-flex"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-orange-500/40 bg-orange-500/10 text-orange-500 text-xs font-mono tracking-wider uppercase transition-all hover:bg-orange-500/20 hover:border-orange-500/60"
                   data-testid="button-connect-wallet"
                 >
-                  <Wallet className="w-3.5 h-3.5 mr-1.5" />
-                  <span className="hidden sm:inline">Connect</span>
-                </Button>
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                  <span className="hidden sm:inline">Connect Wallet</span>
+                  <span className="sm:hidden">Connect</span>
+                </button>
               )}
 
               <Button

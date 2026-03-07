@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useSEO } from "@/hooks/use-seo";
 import { Shield, Users, Brain, Lock, ShieldCheck, Landmark, Search, Database } from "lucide-react";
 
 const contributorDomains = [
@@ -35,6 +36,7 @@ const contributorDomains = [
 ];
 
 export default function Team() {
+  useSEO({ title: "Team", description: "The people behind ORBIT. Anonymous founder with a $7.5B IPO exit. Global network of open-source contributors." });
   return (
     <div className="min-h-screen pt-20 lg:pt-32 pb-16 lg:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

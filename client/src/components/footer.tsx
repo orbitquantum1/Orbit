@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { SiX, SiDiscord, SiGithub, SiTelegram } from "react-icons/si";
+import { WaitlistForm } from "@/components/waitlist";
 
 export function Footer() {
   return (
@@ -105,7 +106,17 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 sm:mt-16 pt-6 sm:pt-8 border-t border-border/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mt-10 sm:mt-16 pt-6 sm:pt-8 border-t border-border/30 mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-white mb-1">Join the ORBIT Network</p>
+              <p className="text-xs text-muted-foreground">Get early access to the agent economy.</p>
+            </div>
+            <WaitlistForm variant="compact" />
+          </div>
+        </div>
+
+        <div className="pt-6 sm:pt-8 border-t border-border/30 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} ORBIT Protocol. All rights reserved.
           </p>

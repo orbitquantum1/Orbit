@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Star } from "lucide-react";
@@ -29,6 +30,30 @@ const merchItems: MerchItem[] = [
     description: "Matte black helmet with ORBIT branding. Full-face protection. Track-inspired. Statement piece.",
     price: 320,
     image: "/images/merch-helmet.png",
+    category: "Gear",
+  },
+  {
+    id: "orbit-sunglasses",
+    name: "Horizon Shades",
+    description: "Polarized matte black sunglasses with orange mirror lenses. Lightweight titanium frame. ORBIT wordmark on temple.",
+    price: 145,
+    image: "/images/merch-sunglasses.png",
+    category: "Accessories",
+  },
+  {
+    id: "orbit-flag",
+    name: "Mission Flag",
+    description: "3x5ft double-sided flag with ORBIT emblem. Reinforced grommets. UV-resistant print. Fly it at the track or HQ.",
+    price: 42,
+    image: "/images/merch-flag.png",
+    category: "Collectibles",
+  },
+  {
+    id: "orbit-blanket",
+    name: "Dark Side Blanket",
+    description: "Sherpa-lined stadium blanket with ORBIT woven logo. 60x80 inches. Folds into carry pouch. Tailgate essential.",
+    price: 68,
+    image: "/images/merch-blanket.png",
     category: "Gear",
   },
   {
@@ -139,30 +164,6 @@ const merchItems: MerchItem[] = [
     category: "Gear",
   },
   {
-    id: "orbit-sunglasses",
-    name: "Horizon Shades",
-    description: "Polarized matte black sunglasses with orange mirror lenses. Lightweight titanium frame. ORBIT wordmark on temple.",
-    price: 145,
-    image: "/images/merch-sunglasses.png",
-    category: "Accessories",
-  },
-  {
-    id: "orbit-flag",
-    name: "Mission Flag",
-    description: "3x5ft double-sided flag with ORBIT emblem. Reinforced grommets. UV-resistant print. Fly it at the track or HQ.",
-    price: 42,
-    image: "/images/merch-flag.png",
-    category: "Collectibles",
-  },
-  {
-    id: "orbit-blanket",
-    name: "Dark Side Blanket",
-    description: "Sherpa-lined stadium blanket with ORBIT woven logo. 60x80 inches. Folds into carry pouch. Tailgate essential.",
-    price: 68,
-    image: "/images/merch-blanket.png",
-    category: "Gear",
-  },
-  {
     id: "orbit-desk-mat",
     name: "Command Desk Mat",
     description: "Oversized desk mat with ORBIT orbital schematic print. Stitched edges. Non-slip rubber base. 900x400mm.",
@@ -256,6 +257,7 @@ const merchItems: MerchItem[] = [
 const categories = ["All", "Apparel", "Accessories", "Gear", "Collectibles"];
 
 export default function Merch() {
+  useSEO({ title: "Merchandise", description: "Mission-ready ORBIT gear. Premium apparel, accessories, and collectibles for the machine economy." });
   const [activeCategory, setActiveCategory] = useState("All");
 
   const filtered =

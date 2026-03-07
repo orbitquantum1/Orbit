@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ const entityTypes = [
 ];
 
 export default function WalletPage() {
+  useSEO({ title: "Wallet", description: "Generate real Ethereum wallets on Base for AI agents, robots, and enterprises. Multi-chain balances, signed transfers, task coordination." });
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState("Robot");

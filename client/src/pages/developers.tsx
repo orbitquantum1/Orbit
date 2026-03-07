@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useSEO } from "@/hooks/use-seo";
 import { Code, Terminal, BookOpen, GitBranch, Package, Zap, Shield, Globe, Cpu, FileCode, ArrowRight, ExternalLink, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -174,6 +175,7 @@ function MethodBadge({ method }: { method: string }) {
 }
 
 export default function Developers() {
+  useSEO({ title: "Developers", description: "Build on ORBIT with TypeScript, Python, Rust, and Go SDKs. 35+ live API endpoints for wallets, identity, settlement, and registry." });
   return (
     <div className="min-h-screen pt-20 lg:pt-32 pb-16 lg:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -303,7 +305,7 @@ export default function Developers() {
               </h2>
             </div>
             <p className="text-muted-foreground text-base ml-5 pl-1">
-              20 live API endpoints across payments, settlement, identity, registry, and cryptography
+              35+ live API endpoints across payments, settlement, identity, registry, and cryptography
             </p>
           </motion.div>
 

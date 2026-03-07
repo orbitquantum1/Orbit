@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -271,6 +272,7 @@ function PlatformHeatmap() {
 }
 
 export default function PlatformOverview() {
+  useSEO({ title: "Platform Overview", description: "The ORBIT protocol stack: identity, wallets, payments, settlement, and coordination for autonomous AI agents and robots." });
   const liveCount = techModules.filter(m => m.status === "live").length;
   const betaCount = techModules.filter(m => m.status === "beta").length;
   const totalEndpoints = techModules.reduce((s, m) => s + (m.endpoints || 0), 0);

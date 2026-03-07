@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -105,10 +107,55 @@ const lifecycle = [
   { status: "Fulfillment", desc: "Resource access is granted with cryptographic receipt", icon: Lock, color: "text-white" },
 ];
 
-export default function X402() {
+function StarField() {
+  const stars = useMemo(() => Array.from({ length: 60 }, (_, i) => {
+    const seed = (i * 7919 + 104729) % 100000;
+    const r = (n: number) => ((seed * (n + 1) * 13397) % 10000) / 10000;
+    return {
+      id: i,
+      x: r(0) * 100,
+      y: r(1) * 100,
+      size: r(2) * 1.5 + 0.5,
+      opacity: r(3) * 0.4 + 0.1,
+      duration: r(4) * 4 + 3,
+      delay: r(5) * 5,
+    };
+  }), []);
   return (
-    <div className="min-h-screen pt-20 lg:pt-32 pb-16 lg:pb-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="absolute inset-0 overflow-hidden">
+      {stars.map((star) => (
+        <motion.div
+          key={star.id}
+          className="absolute rounded-full bg-white"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: star.size,
+            height: star.size,
+          }}
+          animate={{ opacity: [star.opacity, star.opacity * 2.5, star.opacity] }}
+          transition={{ duration: star.duration, repeat: Infinity, delay: star.delay, ease: "easeInOut" }}
+        />
+      ))}
+    </div>
+  );
+}
+
+export default function X402() {
+  useSEO({ title: "X402 Payment Protocol", description: "The internet's native machine payment layer. HTTP 402 Payment Required realized for autonomous agent micropayments." });
+  return (
+    <div className="min-h-screen pt-20 lg:pt-32 pb-16 lg:pb-24 relative">
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <img
+          src="/images/x402-space-hero.png"
+          alt=""
+          className="w-full h-full object-cover opacity-[0.04]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black" />
+        <StarField />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -116,8 +163,8 @@ export default function X402() {
           data-testid="section-x402-hero"
         >
           <img
-            src="/images/quantum-bg.png"
-            alt="Protocol visualization"
+            src="/images/x402-space-hero.png"
+            alt="Orbital payment network"
             className="w-full h-[320px] sm:h-[400px] lg:h-[480px] object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
@@ -466,8 +513,8 @@ export default function X402() {
             className="relative rounded-md overflow-hidden"
           >
             <img
-              src="/images/earth-orbit.png"
-              alt="Earth from orbit"
+              src="/images/x402-space-hero.png"
+              alt="Orbital payment network"
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/75 to-black/50" />
