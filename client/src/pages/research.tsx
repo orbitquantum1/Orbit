@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useSEO } from "@/hooks/use-seo";
+import { ShareButton } from "@/components/share-button";
 import { Brain, Shield, Satellite, Server, Cpu, Lock, Radio, Database, Network, Bot, CircuitBoard, Globe, Zap, Crosshair, Target, Swords } from "lucide-react";
 
 const researchDomains = [
@@ -205,6 +206,12 @@ export default function Research() {
             <p className="text-sm sm:text-base text-white/40 max-w-xl leading-relaxed" data-testid="text-research-subtitle">
               The foundational research behind coordinating autonomous AI agents, robots, and machines at planetary scale.
             </p>
+            <div className="mt-6">
+              <ShareButton
+                text="ORBIT research: quantum-safe cryptography, agent sovereignty, anti-weaponization architecture, and decentralized coordination for the machine economy."
+                label="Share Research"
+              />
+            </div>
           </div>
         </motion.div>
 

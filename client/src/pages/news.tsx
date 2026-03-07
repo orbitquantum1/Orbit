@@ -4,6 +4,12 @@ import { ExternalLink } from "lucide-react";
 
 const newsItems = [
   {
+    quote: "Caitlin Kalinowski, former head of hardware at Meta's Reality Labs, resigned from OpenAI after the company signed a deal with the Pentagon to integrate AI into military and surveillance operations. Her departure highlights the growing tension between AI development and its weaponization by state actors.",
+    source: "Caitlin Kalinowski, OpenAI Resignation",
+    date: "2026",
+    link: "https://x.com/kaboringtech",
+  },
+  {
     quote: "The White House Cyber Strategy for America calls for rapid adoption of agentic AI for cyber defense, post-quantum cryptography deployment, and unprecedented public-private coordination to secure critical infrastructure.",
     source: "White House, Cyber Strategy for America",
     date: "March 2026",

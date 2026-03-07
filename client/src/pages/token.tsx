@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Coins, ArrowRight, Shield, Cpu, DollarSign, Vote, Server, Clock, ExternalLink, Copy, Link2, Network, TrendingUp, Layers, Building2, Landmark, Wallet, Rocket, Zap } from "lucide-react";
 import { useSEO } from "@/hooks/use-seo";
+import { ShareButton } from "@/components/share-button";
 
 const tokenUtilities = [
   {
@@ -66,6 +67,12 @@ export default function Token() {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             The economic and coordination asset powering the machine economy, enabling humans, AI agents, robots, enterprises, military, and government to transact, stake, and govern at scale.
           </p>
+          <div className="mt-6 flex justify-center">
+            <ShareButton
+              text="$ORB: Fair launch on Base via Bankrbot. No presale, no VC, no insider rounds. The native token powering the machine economy."
+              label="Share $ORB"
+            />
+          </div>
         </motion.div>
 
         <motion.section

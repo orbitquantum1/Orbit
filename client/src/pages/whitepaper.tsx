@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useSEO } from "@/hooks/use-seo";
+import { ShareButton } from "@/components/share-button";
 import { FileText, Shield, MessageSquare, DollarSign, Building2, Server, Satellite, Lock, Coins, BarChart3, Network, CreditCard, GitBranch } from "lucide-react";
 
 const sections = [
@@ -233,6 +234,12 @@ export default function WhitePaper() {
               <span>March 2026</span>
               <span className="w-1 h-1 rounded-full bg-white/20" />
               <span>ORBIT Foundation</span>
+            </div>
+            <div className="mt-6">
+              <ShareButton
+                text="ORBIT: The transaction layer for AI agents and the robot economy. Quantum-safe. Censorship-resistant. Sovereign by design."
+                label="Share White Paper"
+              />
             </div>
           </div>
         </motion.div>
