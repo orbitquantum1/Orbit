@@ -2,7 +2,8 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Shield, Cpu, Globe, Zap, Satellite, Lock, Wallet, CreditCard, Fingerprint, Bot, Link2, Network, Building2, Swords, Landmark, User, CircuitBoard, Users, Brain, ShieldCheck, GitCommit, ExternalLink } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { ArrowRight, Shield, Cpu, Globe, Zap, Satellite, Lock, Wallet, CreditCard, Fingerprint, Bot, Link2, Network, Building2, Swords, Landmark, User, CircuitBoard, Users, Brain, ShieldCheck, GitCommit, ExternalLink, Terminal, Clock, Play } from "lucide-react";
 import { SiGithub } from "react-icons/si";
 import { useSEO } from "@/hooks/use-seo";
 import { WaitlistForm } from "@/components/waitlist";
@@ -103,6 +104,186 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(days / 30)}mo ago`;
 }
 
+const demoSteps = [
+  { prefix: "ORBIT://", text: "Agent-7X requests compute from Agent-R2", label: "REQUEST", delay: 0 },
+  { prefix: "ERC-8004:", text: "Identity verified. Trust score: 97.3%", label: "VERIFY", delay: 1200 },
+  { prefix: "X402:", text: "Payment authorized: 0.0042 $ORB", label: "PAYMENT", delay: 2400 },
+  { prefix: "BASE:", text: "Settlement confirmed. Block #18,294,017", label: "SETTLED", delay: 3600 },
+  { prefix: "ORBIT://", text: "Task complete. Receipt signed and stored.", label: "COMPLETE", delay: 4800 },
+];
+
+function InteractiveDemo() {
+  const [activeSteps, setActiveSteps] = useState<number[]>([]);
+  const [isRunning, setIsRunning] = useState(false);
+
+  const runDemo = useCallback(() => {
+    setActiveSteps([]);
+    setIsRunning(true);
+    demoSteps.forEach((_, i) => {
+      setTimeout(() => {
+        setActiveSteps(prev => [...prev, i]);
+        if (i === demoSteps.length - 1) {
+          setTimeout(() => setIsRunning(false), 800);
+        }
+      }, demoSteps[i].delay);
+    });
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(runDemo, 1500);
+    return () => clearTimeout(timer);
+  }, [runDemo]);
+
+  return (
+    <section className="py-16 sm:py-24 relative" data-testid="section-demo">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-10"
+        >
+          <span className="font-mono text-xs tracking-widest text-orange-500/80 uppercase mb-3 block">
+            Live Protocol Demo
+          </span>
+          <h2 className="font-display font-bold text-2xl sm:text-3xl tracking-tight mb-3" data-testid="text-demo-heading">
+            Watch agents transact
+          </h2>
+          <p className="text-muted-foreground max-w-lg mx-auto text-sm leading-relaxed">
+            A simulated agent-to-agent transaction on the ORBIT Protocol. Identity verification, payment, and settlement in under 5 seconds.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-2xl mx-auto"
+        >
+          <div className="rounded-md border border-border/50 bg-black overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/30 bg-white/[0.02]">
+              <div className="flex items-center gap-2">
+                <Terminal className="w-3.5 h-3.5 text-orange-500" />
+                <span className="font-mono text-[11px] text-white/40">orbit-protocol-v0.5.0</span>
+              </div>
+              <button
+                onClick={runDemo}
+                disabled={isRunning}
+                className="flex items-center gap-1.5 text-[11px] font-mono text-orange-500/70 hover:text-orange-500 transition-colors disabled:opacity-30"
+                data-testid="button-run-demo"
+              >
+                <Play className="w-3 h-3" />
+                {isRunning ? "Running..." : "Run again"}
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-6 min-h-[220px] font-mono text-[12px] sm:text-[13px] space-y-3">
+              {demoSteps.map((step, i) => (
+                <div
+                  key={i}
+                  className={`flex items-start gap-3 transition-all duration-500 ${
+                    activeSteps.includes(i) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+                  }`}
+                  data-testid={`demo-step-${i}`}
+                >
+                  <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded-md bg-orange-500/10 text-orange-500/80 border border-orange-500/20 mt-0.5">
+                    {step.label}
+                  </span>
+                  <div>
+                    <span className="text-orange-500/60">{step.prefix}</span>
+                    <span className="text-white/70"> {step.text}</span>
+                  </div>
+                </div>
+              ))}
+
+              {activeSteps.length === demoSteps.length && (
+                <div className="pt-3 border-t border-border/20 mt-4 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                  <span className="text-orange-500/60 text-[11px]">Transaction complete. All steps verified on-chain.</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+const LAUNCH_DATE = new Date("2026-04-15T00:00:00Z").getTime();
+
+function LaunchCountdown() {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const tick = () => {
+      const now = Date.now();
+      const diff = Math.max(0, LAUNCH_DATE - now);
+      setTimeLeft({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+      });
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const units = [
+    { label: "Days", value: timeLeft.days },
+    { label: "Hours", value: timeLeft.hours },
+    { label: "Minutes", value: timeLeft.minutes },
+    { label: "Seconds", value: timeLeft.seconds },
+  ];
+
+  return (
+    <section className="py-16 sm:py-24 relative" data-testid="section-countdown">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center"
+        >
+          <span className="font-mono text-xs tracking-widest text-orange-500/80 uppercase mb-3 block">
+            Fair Launch
+          </span>
+          <h2 className="font-display font-bold text-2xl sm:text-3xl tracking-tight mb-2" data-testid="text-countdown-heading">
+            $ORB on Base via Bankrbot
+          </h2>
+          <p className="text-muted-foreground text-sm mb-10">
+            No presale. No VC allocation. No insider rounds.
+          </p>
+
+          <div className="flex items-center justify-center gap-3 sm:gap-5 mb-10">
+            {units.map((u) => (
+              <div key={u.label} className="flex flex-col items-center" data-testid={`countdown-${u.label.toLowerCase()}`}>
+                <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-md border border-border/50 bg-white/[0.02] flex items-center justify-center">
+                  <span className="font-mono text-2xl sm:text-3xl font-bold text-white tabular-nums">
+                    {String(u.value).padStart(2, "0")}
+                  </span>
+                </div>
+                <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider mt-2">{u.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <Link href="/token">
+              <Button size="lg" data-testid="button-countdown-token">
+                <Clock className="w-4 h-4 mr-2" />
+                View Tokenomics
+              </Button>
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 function GitHubFeedSection() {
   const { data: commits = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/github/commits"],
@@ -130,7 +311,7 @@ function GitHubFeedSection() {
             Development Activity
           </h2>
           <p className="text-muted-foreground max-w-lg mx-auto text-sm leading-relaxed">
-            Real-time commit feed from the ORBIT platform repository on GitHub.
+            Real-time commit feed from the ORBIT Protocol repository on GitHub.
           </p>
         </motion.div>
 
@@ -920,6 +1101,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <InteractiveDemo />
+
+      <LaunchCountdown />
 
       <GitHubFeedSection />
 

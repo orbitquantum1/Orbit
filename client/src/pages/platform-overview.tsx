@@ -39,7 +39,7 @@ const techModules: TechModule[] = [
   { name: "ENS Resolution", status: "live", category: "Identity", description: ".orbit.eth subdomain registration, forward/reverse resolution, gasless meta-transactions", endpoints: 0, icon: Globe },
 ];
 
-const integrationPartners = [
+const protocolIntegrations = [
   { name: "Stripe", icon: SiStripe, status: "Integrated", category: "Payment Processing" },
   { name: "Visa", icon: SiVisa, status: "Compatible", category: "Card Network" },
   { name: "Mastercard", icon: SiMastercard, status: "Compatible", category: "Card Network" },
@@ -272,7 +272,7 @@ function PlatformHeatmap() {
 }
 
 export default function PlatformOverview() {
-  useSEO({ title: "Platform Overview", description: "The ORBIT protocol stack: identity, wallets, payments, settlement, and coordination for autonomous AI agents and robots." });
+  useSEO({ title: "ORBIT Protocol", description: "The ORBIT Protocol stack: identity, wallets, payments, settlement, and coordination for autonomous AI agents and robots." });
   const liveCount = techModules.filter(m => m.status === "live").length;
   const betaCount = techModules.filter(m => m.status === "beta").length;
   const totalEndpoints = techModules.reduce((s, m) => s + (m.endpoints || 0), 0);
@@ -286,7 +286,7 @@ export default function PlatformOverview() {
           className="mb-12 lg:mb-16"
         >
           <span className="font-mono text-[10px] tracking-widest text-orange-500/70 uppercase mb-3 block" data-testid="text-overview-label">
-            Platform Overview
+            ORBIT Protocol
           </span>
           <h1 className="font-display font-bold text-2xl sm:text-4xl lg:text-5xl text-white tracking-tight mb-4" data-testid="text-overview-title">
             Building the Agentic Economy
@@ -349,21 +349,21 @@ export default function PlatformOverview() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3" data-testid="grid-integrations">
-            {integrationPartners.map((partner, i) => {
-              const Icon = partner.icon;
+            {protocolIntegrations.map((integration, i) => {
+              const Icon = integration.icon;
               return (
                 <motion.div
-                  key={partner.name}
+                  key={integration.name}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.18 + i * 0.05 }}
                   className="bg-white/[0.02] border border-white/5 rounded-md p-4 text-center hover:border-orange-500/20 transition-colors"
-                  data-testid={`card-integration-${partner.name.toLowerCase().replace(/\s/g, "-")}`}
+                  data-testid={`card-integration-${integration.name.toLowerCase().replace(/\s/g, "-")}`}
                 >
                   <Icon className="w-8 h-8 text-white/40 mx-auto mb-3" />
-                  <div className="text-sm font-medium text-white/70 mb-1">{partner.name}</div>
-                  <span className="font-mono text-[9px] text-orange-500/60 uppercase">{partner.status}</span>
-                  <div className="font-mono text-[9px] text-white/20 mt-1">{partner.category}</div>
+                  <div className="text-sm font-medium text-white/70 mb-1">{integration.name}</div>
+                  <span className="font-mono text-[9px] text-orange-500/60 uppercase">{integration.status}</span>
+                  <div className="font-mono text-[9px] text-white/20 mt-1">{integration.category}</div>
                 </motion.div>
               );
             })}

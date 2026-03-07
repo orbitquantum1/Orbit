@@ -23,6 +23,9 @@ import Wallet from "@/pages/wallet";
 import Tracker from "@/pages/tracker";
 import PlatformOverview from "@/pages/platform-overview";
 import Education from "@/pages/education";
+import Changelog from "@/pages/changelog";
+import Status from "@/pages/status";
+import FAQ from "@/pages/faq";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
@@ -55,6 +58,9 @@ function Router() {
       <Route path="/tracker" component={Tracker} />
       <Route path="/platform" component={PlatformOverview} />
       <Route path="/education" component={Education} />
+      <Route path="/changelog" component={Changelog} />
+      <Route path="/status" component={Status} />
+      <Route path="/faq" component={FAQ} />
       <Route component={NotFound} />
     </Switch>
   );

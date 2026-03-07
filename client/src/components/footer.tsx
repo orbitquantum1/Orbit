@@ -16,8 +16,7 @@ export function Footer() {
               </div>
               <div className="flex flex-col leading-none">
                 <span className="font-display font-bold text-lg tracking-[0.15em] uppercase">ORBIT</span>
-                <span className="font-mono text-[7px] tracking-[0.3em] uppercase text-orange-500/70">quantum</span>
-              </div>
+                              </div>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               The coordination layer for autonomous AI agents. Enterprise workflows, machine economies, and quantum-resilient cryptography.

@@ -34,7 +34,7 @@ const allocations = [
   { label: "Ecosystem Development", pct: 30, color: "bg-orange-500" },
   { label: "Protocol Treasury", pct: 20, color: "bg-orange-600" },
   { label: "Team & Contributors", pct: 20, color: "bg-orange-400" },
-  { label: "Strategic Partners", pct: 15, color: "bg-gray-400" },
+  { label: "Ecosystem Growth", pct: 15, color: "bg-gray-400" },
   { label: "Public Distribution", pct: 10, color: "bg-gray-500" },
   { label: "Quantum R&D", pct: 5, color: "bg-gray-600" },
 ];

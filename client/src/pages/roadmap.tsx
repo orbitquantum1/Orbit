@@ -119,6 +119,21 @@ const milestones = [
       { label: "Satellite mesh networking", done: false },
     ],
   },
+  {
+    title: "Developer Experience",
+    icon: Globe,
+    desc: "Documentation, tooling, and developer-facing resources for building on ORBIT.",
+    items: [
+      { label: "Changelog and release notes", done: true },
+      { label: "System status page", done: true },
+      { label: "FAQ documentation", done: true },
+      { label: "Interactive protocol demo", done: true },
+      { label: "Launch countdown timer", done: true },
+      { label: "API documentation expansion", done: false },
+      { label: "SDK usage guides", done: false },
+      { label: "Protocol visualization tools", done: false },
+    ],
+  },
 ];
 
 export default function Roadmap() {

@@ -23,7 +23,7 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: "Platform",
+    label: "Protocol",
     links: [
       { label: "Overview", href: "/platform" },
       { label: "Payments", href: "/x402" },
@@ -38,6 +38,8 @@ const navGroups: NavGroup[] = [
       { label: "White Paper", href: "/whitepaper" },
       { label: "Research", href: "/research" },
       { label: "Roadmap", href: "/roadmap" },
+      { label: "Changelog", href: "/changelog" },
+      { label: "Status", href: "/status" },
     ],
   },
   {
@@ -56,6 +58,7 @@ const navGroups: NavGroup[] = [
       { label: "News", href: "/news" },
       { label: "Merchandise", href: "/merch" },
       { label: "Education", href: "/education" },
+      { label: "FAQ", href: "/faq" },
     ],
   },
 ];
@@ -270,7 +273,7 @@ export function Navigation() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-4 h-16 lg:h-20">
-            <Link href="/" data-testid="link-home">
+            <Link href="/" data-testid="link-home" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <div className="flex items-center gap-2.5 cursor-pointer">
                 <div className="relative w-8 h-8 lg:w-9 lg:h-9">
                   <div className="absolute inset-0 rounded-full border-2 border-orange-500/80" />
@@ -280,9 +283,6 @@ export function Navigation() {
                 <div className="flex flex-col leading-none">
                   <span className="font-display font-bold text-xl lg:text-2xl tracking-[0.15em] uppercase">
                     ORBIT
-                  </span>
-                  <span className="font-mono text-[8px] lg:text-[9px] tracking-[0.3em] uppercase text-orange-500/70">
-                    quantum
                   </span>
                 </div>
               </div>
