@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { GitCommit, GitBranch, GitMerge, GitPullRequest, Shield, Cpu, Zap, Database, Lock, Globe, Bot, Wallet, CreditCard, Fingerprint, Network, Server, FileCode, Package, Terminal, CheckCircle2, AlertCircle, ArrowUpRight } from "lucide-react";
+import { GitCommit, GitBranch, GitMerge, GitPullRequest, Shield, Cpu, Zap, Database, Lock, Globe, Bot, Wallet, CreditCard, Fingerprint, Network, Server, FileCode, Package, Terminal, CheckCircle2, AlertCircle, ArrowUpRight, ChevronDown, BarChart3 } from "lucide-react";
 import { SiGithub } from "react-icons/si";
 
 type ActivityType = "commit" | "merge" | "deploy" | "test" | "security" | "infra" | "protocol" | "release";
@@ -22,10 +22,10 @@ interface ActivityEntry {
 const typeConfig: Record<ActivityType, { icon: any; color: string; label: string }> = {
   commit: { icon: GitCommit, color: "text-orange-500", label: "Commit" },
   merge: { icon: GitMerge, color: "text-orange-400", label: "Merge" },
-  deploy: { icon: Server, color: "text-green-500", label: "Deploy" },
-  test: { icon: CheckCircle2, color: "text-emerald-500", label: "Test" },
-  security: { icon: Shield, color: "text-red-400", label: "Security" },
-  infra: { icon: Database, color: "text-orange-300", label: "Infra" },
+  deploy: { icon: Server, color: "text-orange-600", label: "Deploy" },
+  test: { icon: CheckCircle2, color: "text-orange-300", label: "Test" },
+  security: { icon: Shield, color: "text-orange-400", label: "Security" },
+  infra: { icon: Database, color: "text-gray-400", label: "Infra" },
   protocol: { icon: Cpu, color: "text-orange-500", label: "Protocol" },
   release: { icon: Package, color: "text-orange-400", label: "Release" },
 };
@@ -205,6 +205,211 @@ function formatDate(timestamp: string): string {
   });
 }
 
+function ActivityHeatmap({ activities }: { activities: ActivityEntry[] }) {
+  const [open, setOpen] = useState(false);
+
+  const { weeks, maxCount, typeCounts, totalByType } = useMemo(() => {
+    const now = new Date();
+    const dayMs = 86400000;
+    const totalDays = 91;
+    const startDate = new Date(now.getTime() - (totalDays - 1) * dayMs);
+    startDate.setHours(0, 0, 0, 0);
+
+    const dayCounts: Record<string, { count: number; types: Record<string, number> }> = {};
+    for (let d = 0; d < totalDays; d++) {
+      const key = new Date(startDate.getTime() + d * dayMs).toISOString().split("T")[0];
+      dayCounts[key] = { count: 0, types: {} };
+    }
+
+    const tbt: Record<string, number> = {};
+    for (const a of activities) {
+      const key = new Date(a.timestamp).toISOString().split("T")[0];
+      if (dayCounts[key]) {
+        dayCounts[key].count++;
+        dayCounts[key].types[a.type] = (dayCounts[key].types[a.type] || 0) + 1;
+      }
+      tbt[a.type] = (tbt[a.type] || 0) + 1;
+    }
+
+    let mc = 0;
+    const sortedKeys = Object.keys(dayCounts).sort();
+    const dayStartIndex = new Date(sortedKeys[0]).getDay();
+    const allDays: Array<{ date: string; count: number; types: Record<string, number> } | null> = [];
+
+    for (let i = 0; i < dayStartIndex; i++) allDays.push(null);
+    for (const key of sortedKeys) {
+      const d = dayCounts[key];
+      if (d.count > mc) mc = d.count;
+      allDays.push({ date: key, count: d.count, types: d.types });
+    }
+
+    const wks: Array<Array<typeof allDays[0]>> = [];
+    for (let i = 0; i < allDays.length; i += 7) {
+      wks.push(allDays.slice(i, i + 7));
+    }
+    while (wks.length > 0 && wks[wks.length - 1].length < 7) {
+      wks[wks.length - 1].push(null);
+    }
+
+    return { weeks: wks, maxCount: mc, typeCounts: dayCounts, totalByType: tbt };
+  }, [activities]);
+
+  const getIntensity = (count: number): string => {
+    if (count === 0) return "bg-white/[0.03]";
+    const ratio = count / maxCount;
+    if (ratio <= 0.25) return "bg-orange-500/20";
+    if (ratio <= 0.5) return "bg-orange-500/40";
+    if (ratio <= 0.75) return "bg-orange-500/60";
+    return "bg-orange-500/80";
+  };
+
+  const typeOrder: ActivityType[] = ["commit", "merge", "deploy", "test", "security", "infra", "protocol", "release"];
+  const totalAll = Object.values(totalByType).reduce((s, v) => s + v, 0) || 1;
+
+  const monthLabels = useMemo(() => {
+    const labels: Array<{ label: string; col: number }> = [];
+    let lastMonth = -1;
+    weeks.forEach((week, wi) => {
+      for (const day of week) {
+        if (day) {
+          const m = new Date(day.date).getMonth();
+          if (m !== lastMonth) {
+            lastMonth = m;
+            labels.push({ label: new Date(day.date).toLocaleDateString("en-US", { month: "short" }), col: wi });
+            break;
+          }
+        }
+      }
+    });
+    return labels;
+  }, [weeks]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.12 }}
+      className="mb-8"
+    >
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 rounded-md border border-white/5 bg-white/[0.02] hover:bg-white/[0.03] transition-colors"
+        data-testid="button-toggle-heatmap"
+      >
+        <div className="flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-orange-500" />
+          <span className="font-mono text-xs text-white/50 uppercase tracking-wider">Activity Heatmap</span>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-white/30 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-3 border border-white/5 rounded-md bg-white/[0.01] p-4 sm:p-6">
+              <div className="mb-4">
+                <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider">Last 13 weeks</span>
+              </div>
+
+              <div className="overflow-x-auto pb-2">
+                <div className="inline-flex flex-col gap-0.5 min-w-fit">
+                  <div className="flex gap-0.5 ml-8 mb-1">
+                    {monthLabels.map((m, i) => (
+                      <span
+                        key={i}
+                        className="font-mono text-[9px] text-white/20"
+                        style={{ position: "relative", left: `${m.col * 14}px` }}
+                      >
+                        {m.label}
+                      </span>
+                    ))}
+                  </div>
+
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, di) => (
+                    <div key={day} className="flex items-center gap-0.5">
+                      <span className="font-mono text-[9px] text-white/15 w-7 text-right pr-1">
+                        {di % 2 === 1 ? day : ""}
+                      </span>
+                      {weeks.map((week, wi) => {
+                        const cell = week[di];
+                        if (!cell) return <div key={wi} className="w-3 h-3 rounded-sm" />;
+                        return (
+                          <div
+                            key={wi}
+                            className={`w-3 h-3 rounded-sm ${getIntensity(cell.count)} transition-colors`}
+                            title={`${cell.date}: ${cell.count} activities`}
+                            data-testid={`heatmap-cell-${cell.date}`}
+                          />
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1.5 mt-3 ml-8">
+                  <span className="font-mono text-[9px] text-white/20">Less</span>
+                  {["bg-white/[0.03]", "bg-orange-500/20", "bg-orange-500/40", "bg-orange-500/60", "bg-orange-500/80"].map((c, i) => (
+                    <div key={i} className={`w-3 h-3 rounded-sm ${c}`} />
+                  ))}
+                  <span className="font-mono text-[9px] text-white/20">More</span>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-white/5">
+                <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider block mb-3">Type Distribution</span>
+                <div className="flex gap-1 h-3 rounded-md overflow-hidden mb-3" data-testid="bar-type-distribution">
+                  {typeOrder.map((type) => {
+                    const count = totalByType[type] || 0;
+                    const pct = (count / totalAll) * 100;
+                    if (pct < 1) return null;
+                    const cfg = typeConfig[type];
+                    const colorMap: Record<string, string> = {
+                      "text-orange-500": "bg-orange-500",
+                      "text-orange-400": "bg-orange-400",
+                      "text-orange-600": "bg-orange-600",
+                      "text-orange-300": "bg-orange-300",
+                      "text-gray-400": "bg-gray-400",
+                    };
+                    return (
+                      <div
+                        key={type}
+                        className={`${colorMap[cfg.color] || "bg-orange-500"} transition-all`}
+                        style={{ width: `${pct}%` }}
+                        title={`${cfg.label}: ${count} (${Math.round(pct)}%)`}
+                      />
+                    );
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                  {typeOrder.map((type) => {
+                    const count = totalByType[type] || 0;
+                    if (count === 0) return null;
+                    const cfg = typeConfig[type];
+                    return (
+                      <div key={type} className="flex items-center gap-1.5" data-testid={`legend-${type}`}>
+                        <div className={`w-2 h-2 rounded-sm ${cfg.color.replace("text-", "bg-")}`} />
+                        <span className="font-mono text-[10px] text-white/40">
+                          {cfg.label} <span className="text-white/20">{count}</span>
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
 function ActivityCard({ entry, index }: { entry: ActivityEntry; index: number }) {
   const config = typeConfig[entry.type];
   const Icon = config.icon;
@@ -267,19 +472,36 @@ function ActivityCard({ entry, index }: { entry: ActivityEntry; index: number })
 }
 
 export default function Tracker() {
-  const activities = generateProtocolActivity();
+  const protocolActivity = useMemo(() => generateProtocolActivity(), []);
 
   const { data: githubCommits } = useQuery<any[]>({
     queryKey: ["/api/github/commits"],
   });
 
-  const stats = {
-    totalCommits: activities.length + (githubCommits?.length || 0),
-    merges: activities.filter((a) => a.type === "merge").length,
-    deploys: activities.filter((a) => a.type === "deploy").length,
-    tests: activities.filter((a) => a.type === "test").length,
-    security: activities.filter((a) => a.type === "security").length,
-  };
+  const activities = useMemo(() => {
+    const all = [...protocolActivity];
+    if (githubCommits) {
+      for (const gc of githubCommits) {
+        const alreadyExists = all.some((a) => a.sha === gc.sha?.slice(0, 7));
+        if (!alreadyExists) {
+          all.push({
+            id: `gh-${gc.sha?.slice(0, 7)}`,
+            type: "commit" as ActivityType,
+            title: gc.message?.split("\n")[0] || "",
+            description: gc.message?.split("\n").slice(1).join(" ").trim() || "",
+            author: gc.author || "ORBIT Protocol",
+            timestamp: gc.date,
+            branch: "main",
+            sha: gc.sha?.slice(0, 7),
+            tags: ["github", "verified"],
+            url: gc.url,
+          });
+        }
+      }
+    }
+    all.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return all;
+  }, [protocolActivity, githubCommits]);
 
   const [filter, setFilter] = useState<ActivityType | "all">("all");
   const filtered = filter === "all" ? activities : activities.filter((a) => a.type === filter);
@@ -303,25 +525,7 @@ export default function Tracker() {
           </p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8"
-        >
-          {[
-            { label: "Commits", value: stats.totalCommits, color: "text-orange-500" },
-            { label: "Merges", value: stats.merges, color: "text-orange-400" },
-            { label: "Deploys", value: stats.deploys, color: "text-green-500" },
-            { label: "Tests", value: stats.tests, color: "text-emerald-500" },
-            { label: "Security", value: stats.security, color: "text-red-400" },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-white/[0.02] border border-white/5 rounded-md p-3 text-center" data-testid={`stat-${stat.label.toLowerCase()}`}>
-              <div className={`text-lg font-bold ${stat.color}`}>{stat.value}</div>
-              <div className="font-mono text-[10px] text-white/30 uppercase tracking-wider">{stat.label}</div>
-            </div>
-          ))}
-        </motion.div>
+        <ActivityHeatmap activities={activities} />
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}

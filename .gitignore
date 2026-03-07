@@ -1,0 +1,17 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+.local/
+.cache/
+.fingerprint
+replit.md
+*.nix
+.replit
+generated-icon.png
+attached_assets/
+.agents/
+download as zip
+.upm/
