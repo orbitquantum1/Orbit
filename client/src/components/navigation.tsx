@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { Menu, X, Wallet, User, Bot, CircuitBoard, Building2, Swords, Landmark, ChevronDown, LogOut, Copy, Check, ArrowUpRight, ArrowDownLeft, Shield, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,20 +11,55 @@ const simulatedTxHistory = [
   { type: "out", label: "Registry verification", amount: "-5 ORB", time: "3h ago" },
 ];
 
-const navLinks = [
-  { label: "About", href: "/#about" },
-  { label: "Technology", href: "/whitepaper" },
-  { label: "Payments", href: "/x402" },
-  { label: "Marketplace", href: "/marketplace" },
-  { label: "Registry", href: "/registry" },
-  { label: "Roadmap", href: "/roadmap" },
-  { label: "Research", href: "/research" },
-  { label: "Team", href: "/team" },
-  { label: "Token", href: "/token" },
-  { label: "Tracker", href: "/tracker" },
-  { label: "Merchandise", href: "/merch" },
-  { label: "News", href: "/news" },
+interface NavLink {
+  label: string;
+  href: string;
+}
+
+interface NavGroup {
+  label: string;
+  links: NavLink[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    label: "Platform",
+    links: [
+      { label: "Overview", href: "/platform" },
+      { label: "Payments", href: "/x402" },
+      { label: "Marketplace", href: "/marketplace" },
+      { label: "Registry", href: "/registry" },
+    ],
+  },
+  {
+    label: "Technology",
+    links: [
+      { label: "Tracker", href: "/tracker" },
+      { label: "White Paper", href: "/whitepaper" },
+      { label: "Research", href: "/research" },
+      { label: "Roadmap", href: "/roadmap" },
+    ],
+  },
+  {
+    label: "Token",
+    links: [
+      { label: "Overview", href: "/token" },
+      { label: "Tokenomics", href: "/token#supply" },
+      { label: "Utility", href: "/token#utility" },
+      { label: "ORB-USD", href: "/token#stablecoin" },
+    ],
+  },
+  {
+    label: "Community",
+    links: [
+      { label: "Team", href: "/team" },
+      { label: "News", href: "/news" },
+      { label: "Merchandise", href: "/merch" },
+    ],
+  },
 ];
+
+const aboutLink: NavLink = { label: "About", href: "/#about" };
 
 const entityTypes = [
   { icon: User, label: "Human", desc: "Personal wallet for individuals" },
@@ -34,6 +69,111 @@ const entityTypes = [
   { icon: Swords, label: "Military", desc: "Hardened defense wallet" },
   { icon: Landmark, label: "Government", desc: "Sovereign agency wallet" },
 ];
+
+function NavDropdown({ group, location, setLocation: setLoc }: { group: NavGroup; location: string; setLocation: (to: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const timeout = useRef<ReturnType<typeof setTimeout>>();
+
+  const isActive = group.links.some((l) => location === l.href);
+
+  const handleEnter = () => {
+    clearTimeout(timeout.current);
+    setOpen(true);
+  };
+  const handleLeave = () => {
+    timeout.current = setTimeout(() => setOpen(false), 150);
+  };
+
+  useEffect(() => {
+    return () => clearTimeout(timeout.current);
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      data-testid={`nav-group-${group.label.toLowerCase()}`}
+    >
+      <button
+        onClick={() => setOpen(!open)}
+        className={`flex items-center gap-1 px-4 py-2 text-sm font-medium tracking-wide transition-colors cursor-pointer rounded-md ${
+          isActive ? "text-foreground" : "text-muted-foreground"
+        }`}
+        data-testid={`button-nav-${group.label.toLowerCase()}`}
+      >
+        {group.label}
+        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.12 }}
+            className="absolute left-0 top-full pt-1 z-50"
+          >
+            <div className="min-w-[180px] rounded-md border border-border/50 bg-background/95 backdrop-blur-xl shadow-2xl overflow-hidden py-1">
+              {group.links.map((link) => {
+                const hasHash = link.href.includes("#");
+                const basePath = hasHash ? link.href.split("#")[0] : link.href;
+                const hash = hasHash ? link.href.split("#")[1] : null;
+                const isActive = location === basePath;
+
+                if (hasHash) {
+                  return (
+                    <span
+                      key={link.href}
+                      onClick={() => {
+                        setOpen(false);
+                        if (location === basePath) {
+                          document.getElementById(hash!)?.scrollIntoView({ behavior: "smooth" });
+                        } else {
+                          setLoc(basePath);
+                          setTimeout(() => {
+                            document.getElementById(hash!)?.scrollIntoView({ behavior: "smooth" });
+                          }, 300);
+                        }
+                      }}
+                      data-testid={`link-nav-${link.label.toLowerCase().replace(/\s/g, "-")}`}
+                      className={`block px-4 py-2 text-sm font-medium tracking-wide transition-colors cursor-pointer ${
+                        isActive
+                          ? "text-muted-foreground hover:text-foreground hover:bg-white/[0.03]"
+                          : "text-muted-foreground hover:text-foreground hover:bg-white/[0.03]"
+                      }`}
+                    >
+                      {link.label}
+                    </span>
+                  );
+                }
+
+                return (
+                  <Link key={link.href} href={link.href}>
+                    <span
+                      onClick={() => setOpen(false)}
+                      data-testid={`link-nav-${link.label.toLowerCase().replace(/\s/g, "-")}`}
+                      className={`block px-4 py-2 text-sm font-medium tracking-wide transition-colors cursor-pointer ${
+                        isActive
+                          ? "text-foreground bg-white/[0.05]"
+                          : "text-muted-foreground hover:text-foreground hover:bg-white/[0.03]"
+                      }`}
+                    >
+                      {link.label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export function Navigation() {
   const [location, setLocation] = useLocation();
@@ -136,51 +276,38 @@ export function Navigation() {
                   <div className="absolute inset-[3px] rounded-full border border-orange-500/40" />
                   <div className="absolute top-1/2 left-1/2 w-2 h-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500" />
                 </div>
-                <span className="font-display font-bold text-xl lg:text-2xl tracking-[0.15em] uppercase">
-                  ORBIT
-                </span>
+                <div className="flex flex-col leading-none">
+                  <span className="font-display font-bold text-xl lg:text-2xl tracking-[0.15em] uppercase">
+                    ORBIT
+                  </span>
+                  <span className="font-mono text-[8px] lg:text-[9px] tracking-[0.3em] uppercase text-orange-500/70">
+                    quantum
+                  </span>
+                </div>
               </div>
             </Link>
 
             <div className="hidden lg:flex items-center gap-1">
-              {navLinks.map((link) => {
-                if (link.href.startsWith("/#")) {
-                  const anchor = link.href.substring(1);
-                  return (
-                    <span
-                      key={link.href}
-                      onClick={() => {
-                        if (location === "/") {
-                          document.querySelector(anchor)?.scrollIntoView({ behavior: "smooth" });
-                        } else {
-                          setLocation("/");
-                          setTimeout(() => {
-                            document.querySelector(anchor)?.scrollIntoView({ behavior: "smooth" });
-                          }, 100);
-                        }
-                      }}
-                      data-testid={`link-nav-${link.label.toLowerCase().replace(/\s/g, "-")}`}
-                      className={`px-4 py-2 text-sm font-medium tracking-wide transition-colors cursor-pointer rounded-md text-muted-foreground`}
-                    >
-                      {link.label}
-                    </span>
-                  );
-                }
-                return (
-                  <Link key={link.href} href={link.href}>
-                    <span
-                      data-testid={`link-nav-${link.label.toLowerCase().replace(/\s/g, "-")}`}
-                      className={`px-4 py-2 text-sm font-medium tracking-wide transition-colors cursor-pointer rounded-md ${
-                        location === link.href
-                          ? "text-foreground"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {link.label}
-                    </span>
-                  </Link>
-                );
-              })}
+              <span
+                onClick={() => {
+                  if (location === "/") {
+                    document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" });
+                  } else {
+                    setLocation("/");
+                    setTimeout(() => {
+                      document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" });
+                    }, 100);
+                  }
+                }}
+                data-testid="link-nav-about"
+                className="px-4 py-2 text-sm font-medium tracking-wide transition-colors cursor-pointer rounded-md text-muted-foreground"
+              >
+                About
+              </span>
+
+              {navGroups.map((group) => (
+                <NavDropdown key={group.label} group={group} location={location} setLocation={setLocation} />
+              ))}
             </div>
 
             <div className="flex items-center gap-2">
@@ -356,45 +483,74 @@ export function Navigation() {
               className="lg:hidden bg-background/95 backdrop-blur-xl border-b border-border/50 max-h-[calc(100dvh-4rem)] overflow-y-auto"
             >
               <div className="px-4 py-3 flex flex-col gap-0.5">
-                {navLinks.map((link) => {
-                  if (link.href.startsWith("/#")) {
-                    const anchor = link.href.substring(1);
-                    return (
-                      <span
-                        key={link.href}
-                        onClick={() => {
-                          setMobileOpen(false);
-                          if (location === "/") {
-                            document.querySelector(anchor)?.scrollIntoView({ behavior: "smooth" });
-                          } else {
-                            setLocation("/");
-                            setTimeout(() => {
-                              document.querySelector(anchor)?.scrollIntoView({ behavior: "smooth" });
-                            }, 100);
-                          }
-                        }}
-                        data-testid={`link-mobile-${link.label.toLowerCase().replace(/\s/g, "-")}`}
-                        className="block px-4 py-3 min-h-[44px] flex items-center text-sm font-medium tracking-wide rounded-md cursor-pointer transition-colors text-muted-foreground"
-                      >
-                        {link.label}
-                      </span>
-                    );
-                  }
-                  return (
-                    <Link key={link.href} href={link.href}>
-                      <span
-                        data-testid={`link-mobile-${link.label.toLowerCase().replace(/\s/g, "-")}`}
-                        className={`block px-4 py-3 min-h-[44px] flex items-center text-sm font-medium tracking-wide rounded-md cursor-pointer transition-colors ${
-                          location === link.href
-                            ? "text-foreground bg-card"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {link.label}
-                      </span>
-                    </Link>
-                  );
-                })}
+                <span
+                  onClick={() => {
+                    setMobileOpen(false);
+                    if (location === "/") {
+                      document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" });
+                    } else {
+                      setLocation("/");
+                      setTimeout(() => {
+                        document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" });
+                      }, 100);
+                    }
+                  }}
+                  data-testid="link-mobile-about"
+                  className="block px-4 py-3 min-h-[44px] flex items-center text-sm font-medium tracking-wide rounded-md cursor-pointer transition-colors text-muted-foreground"
+                >
+                  About
+                </span>
+
+                {navGroups.map((group) => (
+                  <div key={group.label}>
+                    <span className="block px-4 pt-4 pb-1 font-mono text-[10px] tracking-widest text-orange-500/50 uppercase">
+                      {group.label}
+                    </span>
+                    {group.links.map((link) => {
+                      const hasHash = link.href.includes("#");
+                      const basePath = hasHash ? link.href.split("#")[0] : link.href;
+                      const hash = hasHash ? link.href.split("#")[1] : null;
+
+                      if (hasHash) {
+                        return (
+                          <span
+                            key={link.href}
+                            onClick={() => {
+                              setMobileOpen(false);
+                              if (location === basePath) {
+                                document.getElementById(hash!)?.scrollIntoView({ behavior: "smooth" });
+                              } else {
+                                setLocation(basePath);
+                                setTimeout(() => {
+                                  document.getElementById(hash!)?.scrollIntoView({ behavior: "smooth" });
+                                }, 300);
+                              }
+                            }}
+                            data-testid={`link-mobile-${link.label.toLowerCase().replace(/\s/g, "-")}`}
+                            className="block px-4 py-3 min-h-[44px] flex items-center text-sm font-medium tracking-wide rounded-md cursor-pointer transition-colors text-muted-foreground"
+                          >
+                            {link.label}
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <Link key={link.href} href={link.href}>
+                          <span
+                            data-testid={`link-mobile-${link.label.toLowerCase().replace(/\s/g, "-")}`}
+                            className={`block px-4 py-3 min-h-[44px] flex items-center text-sm font-medium tracking-wide rounded-md cursor-pointer transition-colors ${
+                              location === link.href
+                                ? "text-foreground bg-card"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            {link.label}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ))}
                 {!walletConnected && (
                   <button
                     onClick={connectWallet}

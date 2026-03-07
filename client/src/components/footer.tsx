@@ -13,7 +13,10 @@ export function Footer() {
                 <div className="absolute inset-[3px] rounded-full border border-orange-500/30" />
                 <div className="absolute top-1/2 left-1/2 w-1.5 h-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange-500" />
               </div>
-              <span className="font-display font-bold text-lg tracking-[0.15em] uppercase">ORBIT</span>
+              <div className="flex flex-col leading-none">
+                <span className="font-display font-bold text-lg tracking-[0.15em] uppercase">ORBIT</span>
+                <span className="font-mono text-[7px] tracking-[0.3em] uppercase text-orange-500/70">quantum</span>
+              </div>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               The coordination layer for autonomous AI agents. Enterprise workflows, machine economies, and quantum-resilient cryptography.
@@ -30,6 +33,7 @@ export function Footer() {
                 { label: "Token", href: "/token" },
                 { label: "Marketplace", href: "/registry" },
                 { label: "Research", href: "/research" },
+                { label: "Tracker", href: "/tracker" },
                 { label: "Developers", href: "/developers" },
               ].map((item) => (
                 <li key={item.label}>
