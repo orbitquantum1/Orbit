@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { GitCommit, GitBranch, GitMerge, GitPullRequest, Shield, Cpu, Zap, Database, Lock, Globe, Bot, Wallet, CreditCard, Fingerprint, Network, Server, FileCode, Package, Terminal, CheckCircle2, AlertCircle, ArrowUpRight, ChevronDown, BarChart3 } from "lucide-react";
+import { GitCommit, GitBranch, GitMerge, GitPullRequest, Shield, Cpu, Zap, Database, Lock, Globe, Bot, Wallet, CreditCard, Fingerprint, Network, Server, FileCode, Package, Terminal, CheckCircle2, AlertCircle, ArrowUpRight, ChevronDown, BarChart3, Tag, Rocket, BookOpen } from "lucide-react";
 import { SiGithub } from "react-icons/si";
 import { useSEO } from "@/hooks/use-seo";
 
@@ -472,8 +472,270 @@ function ActivityCard({ entry, index }: { entry: ActivityEntry; index: number })
   );
 }
 
+function NeuralHeatmap() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId: number;
+    let w = 0;
+    let h = 0;
+
+    interface Node { x: number; y: number; vx: number; vy: number; radius: number; glow: number; }
+    interface Pulse { fromIdx: number; toIdx: number; progress: number; speed: number; }
+
+    const nodes: Node[] = [];
+    const pulses: Pulse[] = [];
+    const connections: [number, number][] = [];
+
+    function resize() {
+      const rect = canvas!.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      w = rect.width;
+      h = rect.height;
+      canvas!.width = w * dpr;
+      canvas!.height = h * dpr;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function init() {
+      resize();
+      nodes.length = 0;
+      connections.length = 0;
+      const count = Math.max(30, Math.floor((w * h) / 8000));
+      for (let i = 0; i < count; i++) {
+        nodes.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          radius: 1.5 + Math.random() * 2,
+          glow: 0,
+        });
+      }
+      const maxDist = Math.min(w, h) * 0.25;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          if (Math.sqrt(dx * dx + dy * dy) < maxDist) {
+            connections.push([i, j]);
+          }
+        }
+      }
+    }
+
+    function spawnPulse() {
+      if (connections.length === 0) return;
+      const ci = Math.floor(Math.random() * connections.length);
+      const [a, b] = connections[ci];
+      pulses.push({ fromIdx: a, toIdx: b, progress: 0, speed: 0.005 + Math.random() * 0.01 });
+    }
+
+    let lastPulse = 0;
+
+    function draw(t: number) {
+      ctx!.clearRect(0, 0, w, h);
+
+      for (const node of nodes) {
+        node.x += node.vx;
+        node.y += node.vy;
+        if (node.x < 0 || node.x > w) node.vx *= -1;
+        if (node.y < 0 || node.y > h) node.vy *= -1;
+        node.glow = Math.max(0, node.glow - 0.01);
+      }
+
+      for (const [i, j] of connections) {
+        const a = nodes[i];
+        const b = nodes[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const alpha = Math.max(0.03, 0.08 - dist * 0.0003);
+        ctx!.beginPath();
+        ctx!.moveTo(a.x, a.y);
+        ctx!.lineTo(b.x, b.y);
+        ctx!.strokeStyle = `rgba(249, 115, 22, ${alpha})`;
+        ctx!.lineWidth = 0.5;
+        ctx!.stroke();
+      }
+
+      for (let pi = pulses.length - 1; pi >= 0; pi--) {
+        const p = pulses[pi];
+        p.progress += p.speed;
+        if (p.progress >= 1) {
+          nodes[p.toIdx].glow = 1;
+          pulses.splice(pi, 1);
+          continue;
+        }
+        const a = nodes[p.fromIdx];
+        const b = nodes[p.toIdx];
+        const px = a.x + (b.x - a.x) * p.progress;
+        const py = a.y + (b.y - a.y) * p.progress;
+
+        const gradient = ctx!.createRadialGradient(px, py, 0, px, py, 12);
+        gradient.addColorStop(0, "rgba(249, 115, 22, 0.8)");
+        gradient.addColorStop(1, "rgba(249, 115, 22, 0)");
+        ctx!.beginPath();
+        ctx!.arc(px, py, 12, 0, Math.PI * 2);
+        ctx!.fillStyle = gradient;
+        ctx!.fill();
+
+        ctx!.beginPath();
+        ctx!.arc(px, py, 2.5, 0, Math.PI * 2);
+        ctx!.fillStyle = "rgba(249, 115, 22, 1)";
+        ctx!.fill();
+      }
+
+      for (const node of nodes) {
+        if (node.glow > 0.1) {
+          const gradient = ctx!.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.radius * 6);
+          gradient.addColorStop(0, `rgba(249, 115, 22, ${node.glow * 0.5})`);
+          gradient.addColorStop(1, "rgba(249, 115, 22, 0)");
+          ctx!.beginPath();
+          ctx!.arc(node.x, node.y, node.radius * 6, 0, Math.PI * 2);
+          ctx!.fillStyle = gradient;
+          ctx!.fill();
+        }
+
+        ctx!.beginPath();
+        ctx!.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+        ctx!.fillStyle = `rgba(249, 115, 22, ${0.3 + node.glow * 0.7})`;
+        ctx!.fill();
+      }
+
+      if (t - lastPulse > 200 + Math.random() * 400) {
+        spawnPulse();
+        spawnPulse();
+        lastPulse = t;
+      }
+
+      animId = requestAnimationFrame(draw);
+    }
+
+    init();
+    animId = requestAnimationFrame(draw);
+
+    const handleResize = () => { init(); };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.1 }}
+      className="mb-8 relative rounded-md border border-white/5 overflow-hidden"
+      data-testid="neural-heatmap"
+    >
+      <div className="absolute top-3 left-4 z-10 flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+        <span className="font-mono text-[10px] text-white/40 uppercase tracking-wider">Neural Activity</span>
+      </div>
+      <canvas
+        ref={canvasRef}
+        className="w-full bg-black"
+        style={{ height: "180px" }}
+      />
+    </motion.div>
+  );
+}
+
+const releases = [
+  {
+    version: "v0.5.0",
+    date: "2025-06-01",
+    tag: "Latest",
+    title: "Education Hub, Tracker & Marketplace Enhancements",
+    changes: [
+      { type: "added", text: "Education hub with structured learning paths and protocol courses" },
+      { type: "added", text: "Real-time protocol activity tracker with live transaction feed" },
+      { type: "added", text: "Marketplace agent hiring flow with capability filtering" },
+      { type: "added", text: "System status page for monitoring protocol components" },
+      { type: "improved", text: "Marketplace search and discovery with advanced filters" },
+      { type: "improved", text: "Agent detail views with trust score visualization" },
+      { type: "fixed", text: "Navigation dropdown positioning on mobile viewports" },
+    ],
+  },
+  {
+    version: "v0.4.0",
+    date: "2025-04-15",
+    tag: "Stable",
+    title: "Waitlist, Merch Store & Community Tools",
+    changes: [
+      { type: "added", text: "Waitlist registration system for $ORB fair launch on Base" },
+      { type: "added", text: "Official ORBIT merch store with full product catalog" },
+      { type: "added", text: "Team page showcasing core contributors" },
+      { type: "improved", text: "Landing page hero section with animated astronaut visual" },
+      { type: "improved", text: "Footer with comprehensive site navigation" },
+      { type: "fixed", text: "Dark mode contrast ratios across all page components" },
+    ],
+  },
+  {
+    version: "v0.3.0",
+    date: "2025-02-28",
+    tag: "Stable",
+    title: "X402 Protocol & Settlement Engine",
+    changes: [
+      { type: "added", text: "X402 payment protocol page with HTTP 402 flow documentation" },
+      { type: "added", text: "Cross-network settlement engine supporting 8 chains" },
+      { type: "added", text: "Programmable invoicing and micropayment settlement" },
+      { type: "improved", text: "Wallet engine with multi-network transaction support" },
+      { type: "improved", text: "API route validation using Zod schemas" },
+      { type: "fixed", text: "Settlement initiation error handling for edge cases" },
+    ],
+  },
+  {
+    version: "v0.2.0",
+    date: "2024-12-10",
+    tag: "Stable",
+    title: "Registry, Identity & On-Chain Verification",
+    changes: [
+      { type: "added", text: "ERC-8004 on-chain identity registry for agents and robots" },
+      { type: "added", text: "Cryptographic identity verification system" },
+      { type: "added", text: "Trust scoring and reputation engine" },
+      { type: "improved", text: "Agent capability attestation and permission hierarchies" },
+      { type: "fixed", text: "Identity resolution across cross-wallet lookups" },
+    ],
+  },
+  {
+    version: "v0.1.0",
+    date: "2024-09-20",
+    tag: "Genesis",
+    title: "Core Wallet System & Protocol Foundation",
+    changes: [
+      { type: "added", text: "Universal digital wallet supporting human, AI agent, and robot participants" },
+      { type: "added", text: "Enterprise multi-sig and military hardened wallet types" },
+      { type: "added", text: "$ORB token economics design and fee structure" },
+      { type: "added", text: "Whitepaper and roadmap documentation" },
+      { type: "added", text: "AES-256 symmetric encryption for agent communications" },
+    ],
+  },
+];
+
+const releaseTypeColors: Record<string, string> = {
+  added: "text-orange-500",
+  improved: "text-white/50",
+  fixed: "text-white/30",
+};
+
+const releaseTypeLabels: Record<string, string> = {
+  added: "Added",
+  improved: "Improved",
+  fixed: "Fixed",
+};
+
 export default function Tracker() {
-  useSEO({ title: "Live Tracker", description: "Real-time development feed from the ORBIT platform. Every commit, merge, deploy, and security update." });
+  useSEO({ title: "Live Tracker", description: "Real-time development feed from the ORBIT Protocol. Every commit, merge, deploy, and security update." });
   const protocolActivity = useMemo(() => generateProtocolActivity(), []);
 
   const { data: githubCommits } = useQuery<any[]>({
@@ -523,9 +785,11 @@ export default function Tracker() {
             Live Tracker
           </h1>
           <p className="text-sm text-white/40 max-w-xl leading-relaxed">
-            Real-time development feed from the ORBIT platform engineering team. Every commit, merge, deploy, and security update.
+            Real-time development feed from the ORBIT Protocol engineering team. Every commit, merge, deploy, and security update.
           </p>
         </motion.div>
+
+        <NeuralHeatmap />
 
         <ActivityHeatmap activities={activities} />
 
@@ -582,6 +846,89 @@ export default function Tracker() {
             <span className="font-mono text-[10px] text-white/20 uppercase tracking-wider">
               Showing {filtered.length} of {activities.length} entries
             </span>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-16 lg:mt-24"
+        >
+          <div className="mb-8">
+            <span className="font-mono text-[10px] tracking-widest text-orange-500/70 uppercase mb-3 block">
+              Changelog
+            </span>
+            <h2 className="font-display font-bold text-xl sm:text-2xl lg:text-3xl text-white tracking-tight mb-3">
+              What we shipped.
+            </h2>
+            <p className="text-sm text-white/40 max-w-xl leading-relaxed">
+              A versioned record of every feature, improvement, and fix across the ORBIT protocol.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div className="absolute left-[19px] top-0 bottom-0 w-px bg-white/5 hidden sm:block" />
+
+            <div className="space-y-10">
+              {releases.map((release, ri) => (
+                <motion.div
+                  key={release.version}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: ri * 0.05 }}
+                  className="relative"
+                  data-testid={`card-changelog-${release.version}`}
+                >
+                  <div className="flex items-start gap-4 sm:gap-6">
+                    <div className="relative z-10 w-10 h-10 rounded-md bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                      <Tag className="w-5 h-5 text-orange-500" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1 flex-wrap">
+                        <span className="font-mono text-sm font-semibold text-orange-500" data-testid={`text-version-${release.version}`}>
+                          {release.version}
+                        </span>
+                        {release.tag === "Latest" && (
+                          <span className="font-mono text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-500 border border-orange-500/20">
+                            {release.tag}
+                          </span>
+                        )}
+                        {release.tag === "Genesis" && (
+                          <span className="font-mono text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-md bg-white/5 text-white/40 border border-white/10">
+                            {release.tag}
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="font-display font-semibold text-lg tracking-tight mb-1">
+                        {release.title}
+                      </h3>
+                      <span className="font-mono text-xs text-white/20 block mb-4">
+                        {release.date}
+                      </span>
+
+                      <div className="rounded-md border border-white/5 bg-white/[0.02] overflow-hidden">
+                        <div className="divide-y divide-white/5">
+                          {release.changes.map((change, ci) => (
+                            <div key={ci} className="flex items-start gap-3 px-4 py-3" data-testid={`changelog-item-${release.version}-${ci}`}>
+                              <span className={`font-mono text-[10px] tracking-wider uppercase w-16 flex-shrink-0 pt-0.5 ${releaseTypeColors[change.type]}`}>
+                                {releaseTypeLabels[change.type]}
+                              </span>
+                              <span className="text-sm text-white/60 leading-relaxed">
+                                {change.text}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>

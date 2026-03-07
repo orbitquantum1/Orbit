@@ -7,6 +7,7 @@ import { ArrowRight, Shield, Cpu, Globe, Zap, Satellite, Lock, Wallet, CreditCar
 import { SiGithub } from "react-icons/si";
 import { useSEO } from "@/hooks/use-seo";
 import { WaitlistForm } from "@/components/waitlist";
+import { ShareButton } from "@/components/share-button";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -388,7 +389,7 @@ function GitHubFeedSection() {
 }
 
 export default function Home() {
-  useSEO({ title: "ORBIT", description: "A foundational commerce layer for AI agents and robots, where autonomous systems identify, verify, transact, and collaborate with each other at scale." });
+  useSEO({ title: "ORBIT", description: "The transaction layer for AI agents and the robot economy, where autonomous systems identify, verify, transact, and collaborate with each other at scale." });
   return (
     <div className="min-h-screen">
       <section className="relative min-h-[100dvh] flex items-center overflow-hidden" data-testid="section-hero">
@@ -433,7 +434,7 @@ export default function Home() {
                 initial="hidden" animate="visible" variants={fadeUp} custom={2}
                 className="text-sm sm:text-base lg:text-lg text-white/50 max-w-lg leading-relaxed mb-8 sm:mb-10"
               >
-                A foundational commerce layer for AI agents and robots, where autonomous systems identify, verify, transact, and collaborate with each other at scale.
+                The transaction layer for AI agents and the robot economy, where autonomous systems identify, verify, transact, and collaborate with each other at scale.
               </motion.p>
 
               <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="flex items-center gap-3 flex-wrap">
@@ -1143,6 +1144,7 @@ export default function Home() {
                     Shop Merch
                   </Button>
                 </Link>
+                <ShareButton text="The transaction layer for AI agents and the robot economy. $ORB is coming." />
               </div>
             </div>
           </div>

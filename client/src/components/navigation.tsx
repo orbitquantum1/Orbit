@@ -23,7 +23,7 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: "Protocol",
+    label: "Platform",
     links: [
       { label: "Overview", href: "/platform" },
       { label: "Payments", href: "/x402" },
@@ -34,11 +34,10 @@ const navGroups: NavGroup[] = [
   {
     label: "Technology",
     links: [
-      { label: "Tracker", href: "/tracker" },
+      { label: "Live Tracker", href: "/tracker" },
       { label: "White Paper", href: "/whitepaper" },
       { label: "Research", href: "/research" },
       { label: "Roadmap", href: "/roadmap" },
-      { label: "Changelog", href: "/changelog" },
       { label: "Status", href: "/status" },
     ],
   },

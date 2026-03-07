@@ -40,6 +40,8 @@ export interface IStorage {
   revokeCapabilityToken(id: string): Promise<void>;
   addToWaitlist(data: InsertWaitlist): Promise<Waitlist>;
   getWaitlistCount(): Promise<number>;
+  getWaitlistByReferralCode(code: string): Promise<Waitlist | undefined>;
+  getReferralCount(code: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -243,12 +245,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addToWaitlist(data: InsertWaitlist): Promise<Waitlist> {
-    const [entry] = await db.insert(waitlist).values(data).returning();
+    const code = Array.from({ length: 6 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 31)]).join("");
+    const [entry] = await db.insert(waitlist).values({ ...data, referralCode: code }).returning();
     return entry;
   }
 
   async getWaitlistCount(): Promise<number> {
     const [result] = await db.select({ count: sql<number>`count(*)` }).from(waitlist);
+    return Number(result.count);
+  }
+
+  async getWaitlistByReferralCode(code: string): Promise<Waitlist | undefined> {
+    const [entry] = await db.select().from(waitlist).where(eq(waitlist.referralCode, code));
+    return entry;
+  }
+
+  async getReferralCount(code: string): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`count(*)` }).from(waitlist).where(eq(waitlist.referredBy, code));
     return Number(result.count);
   }
 }

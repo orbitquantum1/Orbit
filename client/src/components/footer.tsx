@@ -19,7 +19,7 @@ export function Footer() {
                               </div>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-              The coordination layer for autonomous AI agents. Enterprise workflows, machine economies, and quantum-resilient cryptography.
+              The transaction layer for AI agents and the robot economy. Identity, wallets, payments, and coordination at scale.
             </p>
           </div>
 

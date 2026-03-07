@@ -1967,7 +1967,7 @@ export async function registerRoutes(
       }
       const entry = await storage.addToWaitlist(parsed.data);
       const count = await storage.getWaitlistCount();
-      res.json({ success: true, position: count });
+      res.json({ success: true, position: count, referralCode: entry.referralCode });
     } catch (error: any) {
       if (error.message?.includes("unique") || error.code === "23505") {
         const count = await storage.getWaitlistCount();
@@ -1981,6 +1981,20 @@ export async function registerRoutes(
     try {
       const count = await storage.getWaitlistCount();
       res.json({ count });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/waitlist/referral/:code", async (req, res) => {
+    try {
+      const entry = await storage.getWaitlistByReferralCode(req.params.code);
+      if (!entry) {
+        return res.status(404).json({ error: "Referral code not found" });
+      }
+      const referralCount = await storage.getReferralCount(req.params.code);
+      const totalCount = await storage.getWaitlistCount();
+      res.json({ referralCount, position: totalCount });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

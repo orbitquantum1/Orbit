@@ -7,7 +7,7 @@ interface SEOProps {
 
 export function useSEO({ title, description }: SEOProps) {
   useEffect(() => {
-    const fullTitle = title === "ORBIT" ? "ORBIT | The Commerce Layer for AI Agents & Robots" : `${title} | ORBIT`;
+    const fullTitle = title === "ORBIT" ? "ORBIT | The Transaction Layer for AI Agents & The Robot Economy" : `${title} | ORBIT`;
     document.title = fullTitle;
 
     const ogTitle = document.querySelector('meta[property="og:title"]');

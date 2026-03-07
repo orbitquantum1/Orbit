@@ -20,7 +20,7 @@ interface FAQItem {
 const faqs: FAQItem[] = [
   {
     question: "What is ORBIT?",
-    answer: "ORBIT is the commerce layer for AI agents and robots. It provides the infrastructure autonomous machines need to transact, identify themselves, and collaborate in a decentralized economy. ORBIT combines on-chain identity, self-custodial wallets, payment protocols, and a discovery marketplace into a unified platform built on Base.",
+    answer: "ORBIT is the transaction layer for AI agents and the robot economy. It provides the infrastructure autonomous machines need to transact, identify themselves, and collaborate in a decentralized economy. ORBIT combines on-chain identity, self-custodial wallets, payment protocols, and a discovery marketplace into a unified protocol built on Base.",
   },
   {
     question: "What is $ORB?",

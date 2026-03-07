@@ -122,11 +122,14 @@ export const waitlist = pgTable("waitlist", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
   role: text("role").default("builder"),
+  referralCode: text("referral_code").notNull().unique(),
+  referredBy: text("referred_by"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertWaitlistSchema = createInsertSchema(waitlist).omit({
   id: true,
+  referralCode: true,
   createdAt: true,
 });
 
