@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type RegistryEntry, type InsertRegistryEntry, type Wallet, type InsertWallet, type Transaction, type InsertTransaction, type Task, type InsertTask, type IdentityDocument, type InsertIdentityDocument, type CapabilityToken, type InsertCapabilityToken, type Waitlist, type InsertWaitlist, type TreasuryPosition, type InsertTreasuryPosition, type TreasuryRevenue, type InsertTreasuryRevenue, users, registryEntries, wallets, transactions, tasks, identityDocuments, capabilityTokens, waitlist, treasuryPositions, treasuryRevenue } from "@shared/schema";
+import { type User, type InsertUser, type RegistryEntry, type InsertRegistryEntry, type Wallet, type InsertWallet, type Transaction, type InsertTransaction, type Task, type InsertTask, type IdentityDocument, type InsertIdentityDocument, type CapabilityToken, type InsertCapabilityToken, type Waitlist, type InsertWaitlist, type TreasuryPosition, type InsertTreasuryPosition, type TreasuryRevenue, type InsertTreasuryRevenue, type Webhook, type InsertWebhook, users, registryEntries, wallets, transactions, tasks, identityDocuments, capabilityTokens, waitlist, treasuryPositions, treasuryRevenue, webhooks } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 
@@ -48,6 +48,10 @@ export interface IStorage {
   recordTreasuryRevenue(data: InsertTreasuryRevenue): Promise<TreasuryRevenue>;
   getTreasuryRevenue(): Promise<TreasuryRevenue[]>;
   getTreasuryWallet(): Promise<Wallet | undefined>;
+  createWebhook(data: InsertWebhook): Promise<Webhook>;
+  getWebhooksByAddress(walletAddress: string): Promise<Webhook[]>;
+  deleteWebhook(id: string): Promise<void>;
+  updateWebhookActive(id: string, active: boolean): Promise<Webhook>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -305,6 +309,24 @@ export class DatabaseStorage implements IStorage {
   async getTreasuryWallet(): Promise<Wallet | undefined> {
     const [wallet] = await db.select().from(wallets).where(eq(wallets.name, "ORBIT Protocol Treasury"));
     return wallet;
+  }
+
+  async createWebhook(data: InsertWebhook): Promise<Webhook> {
+    const [webhook] = await db.insert(webhooks).values(data).returning();
+    return webhook;
+  }
+
+  async getWebhooksByAddress(walletAddress: string): Promise<Webhook[]> {
+    return db.select().from(webhooks).where(eq(webhooks.walletAddress, walletAddress)).orderBy(desc(webhooks.createdAt));
+  }
+
+  async deleteWebhook(id: string): Promise<void> {
+    await db.delete(webhooks).where(eq(webhooks.id, id));
+  }
+
+  async updateWebhookActive(id: string, active: boolean): Promise<Webhook> {
+    const [webhook] = await db.update(webhooks).set({ active }).where(eq(webhooks.id, id)).returning();
+    return webhook;
   }
 }
 

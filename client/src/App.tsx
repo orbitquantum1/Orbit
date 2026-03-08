@@ -29,6 +29,14 @@ import FAQ from "@/pages/faq";
 import Treasury from "@/pages/treasury";
 import ContentStudio from "@/pages/content-studio";
 import Bridge from "@/pages/bridge";
+import Webhooks from "@/pages/webhooks";
+import ApiPlayground from "@/pages/api-playground";
+import Analytics from "@/pages/analytics";
+import Fleet from "@/pages/fleet";
+import Portfolio from "@/pages/portfolio";
+import Governance from "@/pages/governance";
+import Audit from "@/pages/audit";
+import Escrow from "@/pages/escrow";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
@@ -67,6 +75,14 @@ function Router() {
       <Route path="/treasury" component={Treasury} />
       <Route path="/community" component={ContentStudio} />
       <Route path="/bridge" component={Bridge} />
+      <Route path="/webhooks" component={Webhooks} />
+      <Route path="/playground" component={ApiPlayground} />
+      <Route path="/analytics" component={Analytics} />
+      <Route path="/fleet" component={Fleet} />
+      <Route path="/portfolio" component={Portfolio} />
+      <Route path="/governance" component={Governance} />
+      <Route path="/audit" component={Audit} />
+      <Route path="/escrow" component={Escrow} />
       <Route component={NotFound} />
     </Switch>
   );

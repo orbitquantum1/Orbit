@@ -25,6 +25,9 @@ const navGroups: NavGroup[] = [
       { label: "Bridge", href: "/bridge" },
       { label: "Marketplace", href: "/marketplace" },
       { label: "Registry", href: "/registry" },
+      { label: "Analytics", href: "/analytics" },
+      { label: "Fleet Manager", href: "/fleet" },
+      { label: "Escrow", href: "/escrow" },
     ],
   },
   {
@@ -35,6 +38,9 @@ const navGroups: NavGroup[] = [
       { label: "Documents", href: "/developers" },
       { label: "Roadmap", href: "/roadmap" },
       { label: "White Paper", href: "/whitepaper" },
+      { label: "API Playground", href: "/playground" },
+      { label: "Webhooks", href: "/webhooks" },
+      { label: "Audit Log", href: "/audit" },
       { label: "Status", href: "/status" },
     ],
   },
@@ -43,10 +49,12 @@ const navGroups: NavGroup[] = [
     links: [
       { label: "Overview", href: "/token" },
       { label: "Treasury", href: "/treasury" },
+      { label: "Portfolio", href: "/portfolio" },
       { label: "Tokenomics", href: "/token#supply" },
       { label: "Revenue", href: "/treasury#revenue" },
       { label: "Utility", href: "/token#utility" },
       { label: "ORB-USD", href: "/token#stablecoin" },
+      { label: "Governance", href: "/governance" },
     ],
   },
   {

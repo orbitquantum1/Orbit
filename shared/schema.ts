@@ -250,3 +250,20 @@ export type InsertTreasuryPosition = z.infer<typeof insertTreasuryPositionSchema
 export type TreasuryPosition = typeof treasuryPositions.$inferSelect;
 export type InsertTreasuryRevenue = z.infer<typeof insertTreasuryRevenueSchema>;
 export type TreasuryRevenue = typeof treasuryRevenue.$inferSelect;
+
+export const webhooks = pgTable("webhooks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  walletAddress: text("wallet_address").notNull(),
+  url: text("url").notNull(),
+  events: text("events").array().notNull(),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertWebhookSchema = createInsertSchema(webhooks).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertWebhook = z.infer<typeof insertWebhookSchema>;
+export type Webhook = typeof webhooks.$inferSelect;

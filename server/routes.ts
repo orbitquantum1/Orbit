@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertRegistrySchema, insertWalletSchema, insertTaskSchema, insertWaitlistSchema } from "@shared/schema";
+import { insertRegistrySchema, insertWalletSchema, insertTaskSchema, insertWaitlistSchema, insertWebhookSchema } from "@shared/schema";
 import { encrypt, decrypt, generateIdentityProof, generateCapabilityAttestation, getPermissions, checkPermission, verifySignature, signData } from "./crypto";
 import { generateWallet, getMultiChainBalances, getWalletBalance, signMessage, createTransferSignature, verifyTaskCompletion, getSupportedNetworks, broadcastTransaction, resolveENS, getERC20Balances, estimateGas, getChainStatus, getGasPrice, signMessageWithKey, verifyMessageSignature } from "./wallet-engine";
 import { generateIdentityDocument, verifyIdentityDocument, issueCapabilityToken, revokeCapabilityToken, getIdentityByAddress, resolveDID, createDID } from "./identity";
@@ -2703,6 +2703,66 @@ export async function registerRoutes(
       doc.fillColor(gray).text("This document is for informational purposes only. It does not constitute financial advice or a solicitation to purchase tokens.", 60, doc.page.height - 50);
 
       doc.end();
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/webhooks", async (req, res) => {
+    try {
+      const parsed = insertWebhookSchema.parse(req.body);
+      const webhook = await storage.createWebhook(parsed);
+      res.json(webhook);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/webhooks/:address", async (req, res) => {
+    try {
+      const webhooks = await storage.getWebhooksByAddress(req.params.address);
+      res.json(webhooks);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/webhooks/:id", async (req, res) => {
+    try {
+      await storage.deleteWebhook(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/webhooks/:id", async (req, res) => {
+    try {
+      const { active } = req.body;
+      if (typeof active !== "boolean") {
+        return res.status(400).json({ error: "active must be a boolean" });
+      }
+      const webhook = await storage.updateWebhookActive(req.params.id, active);
+      res.json(webhook);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/webhooks/:id/test", async (req, res) => {
+    try {
+      const samplePayload = {
+        event: "test",
+        timestamp: new Date().toISOString(),
+        data: {
+          message: "This is a test webhook from ORBIT Protocol",
+          webhookId: req.params.id,
+          protocol: "ORBIT",
+          network: "base",
+          chainId: 8453,
+        },
+      };
+      res.json({ success: true, payload: samplePayload });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
