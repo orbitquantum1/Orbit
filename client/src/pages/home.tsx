@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useCallback } from "react";
-import { ArrowRight, Shield, Cpu, Globe, Zap, Satellite, Lock, Wallet, CreditCard, Fingerprint, Bot, Link2, Network, Building2, Swords, Landmark, User, CircuitBoard, Users, Brain, ShieldCheck, GitCommit, ExternalLink, Terminal, Clock, Play } from "lucide-react";
+import { ArrowRight, Shield, Cpu, Globe, Zap, Satellite, Lock, Wallet, CreditCard, Fingerprint, Bot, Link2, Network, Building2, Swords, Landmark, User, CircuitBoard, Users, Brain, ShieldCheck, GitCommit, ExternalLink, Terminal, Clock, Play, TrendingUp, DollarSign, ShoppingCart, Gamepad2, Search } from "lucide-react";
 import { SiGithub } from "react-icons/si";
 import { useSEO } from "@/hooks/use-seo";
 import { WaitlistForm } from "@/components/waitlist";
@@ -36,8 +36,8 @@ const coreFeatures = [
   },
   {
     icon: Bot,
-    title: "Grok AI Integration",
-    desc: "Native Grok connectivity for agent reasoning, sub-agent orchestration, and real-time intelligence across the ORBIT network.",
+    title: "Custom AI Agents",
+    desc: "Design your own custom AI agents with configurable reasoning and missions. Deploy them on ORBIT with on-chain identity and autonomous wallets.",
   },
   {
     icon: Shield,
@@ -58,7 +58,7 @@ const coreFeatures = [
 
 const protocolStack = [
   { icon: Satellite, title: "Space Infrastructure", desc: "Orbital compute, satellite coordination, delay-tolerant networking" },
-  { icon: Cpu, title: "AI Transaction Layer", desc: "Multi-agent orchestration, Grok-powered reasoning, sub-agent trees" },
+  { icon: Cpu, title: "AI Transaction Layer", desc: "Multi-agent orchestration, autonomous reasoning, sub-agent trees" },
   { icon: Globe, title: "Enterprise Integration", desc: "ERP, supply chain, cloud infrastructure, financial systems" },
   { icon: Zap, title: "Economic Settlement", desc: "X402 payments, programmable settlement, ORB-USD stablecoin (roadmap)" },
 ];
@@ -95,6 +95,22 @@ const domains = [
   { icon: Globe, title: "Robotics & Manufacturing", desc: "Factory automation, autonomous vehicles, logistics fleets, industrial coordination" },
   { icon: Satellite, title: "Space Infrastructure", desc: "Satellite coordination, orbital compute, delay-tolerant networking, mission management" },
   { icon: Zap, title: "Machine Economics", desc: "Agent-to-agent settlement, programmable payments, stablecoin infrastructure, token-based coordination" },
+];
+
+
+const agentUseCases = [
+  { icon: TrendingUp, title: "Trading", desc: "Agents betting and striking prices on derivatives via Derive.xyz and other DeFi protocols at machine speed." },
+  { icon: DollarSign, title: "Payments", desc: "Agents paying counterparties on bets, trades, and service agreements autonomously without human intervention." },
+  { icon: ShoppingCart, title: "Commerce", desc: "Agents purchasing compute, data, API access, and services from other agents in real-time marketplaces." },
+  { icon: Gamepad2, title: "Gaming", desc: "Agents competing, wagering, and settling outcomes in autonomous gaming and prediction markets." },
+];
+
+const whyOrbit = [
+  { icon: Fingerprint, title: "Identity", desc: "ERC-8004 on-chain identity" },
+  { icon: Wallet, title: "Wallets", desc: "Base-native agent wallets" },
+  { icon: CreditCard, title: "Payments", desc: "x402 machine payments" },
+  { icon: Search, title: "Marketplace", desc: "API and agent discovery" },
+  { icon: Network, title: "Coordination", desc: "Multi-agent task pools" },
 ];
 
 function timeAgo(dateStr: string): string {
@@ -449,9 +465,9 @@ export default function Home() {
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
-                <Link href="/registry">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto backdrop-blur-sm bg-white/5 border-white/15 text-white" data-testid="button-explore-registry">
-                    Orbit Marketplace
+                <Link href="/platform">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto backdrop-blur-sm bg-white/5 border-white/15 text-white" data-testid="button-explore-protocol">
+                    Explore Protocol
                   </Button>
                 </Link>
               </motion.div>
@@ -840,7 +856,7 @@ export default function Home() {
                 <div className="absolute bottom-0 left-0 right-0 p-8">
                   <div className="grid grid-cols-2 gap-6">
                     {[
-                      { value: "10B", label: "Token Supply" },
+                      { value: "100B", label: "Token Supply" },
                       { value: "PQC", label: "Quantum-Safe" },
                       { value: "X402", label: "Payment Protocol" },
                       { value: "8004", label: "ERC Standard" },
@@ -878,6 +894,21 @@ export default function Home() {
             </p>
           </motion.div>
 
+          <motion.blockquote
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12 border-l-2 border-orange-500 pl-6 py-4"
+            data-testid="quote-founder"
+          >
+            <p className="text-lg lg:text-xl text-foreground/90 italic leading-relaxed max-w-3xl">
+              "AI and machines will control 90% of economic transactions by 2030. Whoever delivers the payment rails those machines run on, will have control over the most important financial network in history. These rails must be democratic and decentralized."
+            </p>
+            <footer className="mt-3 text-sm text-muted-foreground font-mono tracking-wide">
+              Founder, ORBIT Protocol
+            </footer>
+          </motion.blockquote>
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {walletTypes.map((w, i) => (
               <motion.div
@@ -897,6 +928,88 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="py-16 sm:py-24 lg:py-32 relative" data-testid="section-agent-economy">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12"
+          >
+            <span className="font-mono text-xs tracking-widest text-orange-500/80 uppercase mb-3 block">
+              Agent Economy
+            </span>
+            <h2 className="font-display font-bold text-3xl lg:text-4xl tracking-tight mb-3" data-testid="text-agent-economy-heading">
+              The agent economy is{" "}
+              <span className="dark:text-gradient text-gradient-light">here.</span>
+            </h2>
+            <p className="text-muted-foreground max-w-2xl text-base lg:text-lg leading-relaxed" data-testid="text-agent-economy-desc">
+              Autonomous AI agents are already generating real revenue, managing treasuries, and trading on Base. ORBIT is the protocol layer that powers them all.
+            </p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12">
+            {agentUseCases.map((uc, i) => (
+              <motion.div
+                key={uc.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06 }}
+                className="p-6 rounded-md border border-border/50 bg-card/50 dark:bg-white/[0.02] hover-elevate"
+                data-testid={`card-agent-usecase-${i}`}
+              >
+                <div className="w-10 h-10 rounded-md bg-orange-500/10 flex items-center justify-center mb-4">
+                  <uc.icon className="w-5 h-5 text-orange-500" />
+                </div>
+                <h3 className="font-display font-semibold text-base mb-2 tracking-tight">{uc.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{uc.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-md border border-border/50 bg-card/50 dark:bg-white/[0.02] p-6 lg:p-8"
+            data-testid="card-why-orbit"
+          >
+            <h3 className="font-display font-semibold text-lg mb-1 tracking-tight" data-testid="text-why-orbit-heading">Why Agents Need ORBIT</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Autonomous AI agents are already generating revenue, managing treasuries, and trading on Base. They all need wallet infrastructure, identity, and payment rails. ORBIT provides this.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {whyOrbit.map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.06 }}
+                  className="flex flex-col items-center text-center p-4 rounded-md bg-orange-500/[0.03] border border-orange-500/10"
+                  data-testid={`card-why-orbit-${i}`}
+                >
+                  <div className="w-9 h-9 rounded-md bg-orange-500/10 flex items-center justify-center mb-3">
+                    <item.icon className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <span className="font-display font-semibold text-sm mb-0.5">{item.title}</span>
+                  <span className="text-xs text-muted-foreground">{item.desc}</span>
+                </motion.div>
+              ))}
+            </div>
+            <div className="mt-6 flex justify-center">
+              <Link href="/wallet">
+                <Button size="lg" data-testid="button-explore-agent-wallets">
+                  Explore Agent Wallets
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -1149,7 +1262,7 @@ export default function Home() {
                     Shop Merch
                   </Button>
                 </Link>
-                <ShareButton text="The transaction layer for AI agents and the robot economy. $ORB is coming." />
+                <ShareButton text="The transaction layer for AI agents and the robot economy. $ORB by @orbitquantum on @base via @bankrbot." />
               </div>
             </div>
           </div>

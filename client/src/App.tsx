@@ -26,6 +26,9 @@ import Education from "@/pages/education";
 import Changelog from "@/pages/changelog";
 import Status from "@/pages/status";
 import FAQ from "@/pages/faq";
+import Treasury from "@/pages/treasury";
+import ContentStudio from "@/pages/content-studio";
+import Bridge from "@/pages/bridge";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
@@ -61,6 +64,9 @@ function Router() {
       <Route path="/changelog" component={Changelog} />
       <Route path="/status" component={Status} />
       <Route path="/faq" component={FAQ} />
+      <Route path="/treasury" component={Treasury} />
+      <Route path="/community" component={ContentStudio} />
+      <Route path="/bridge" component={Bridge} />
       <Route component={NotFound} />
     </Switch>
   );

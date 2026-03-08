@@ -1,15 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Wallet, User, Bot, CircuitBoard, Building2, Swords, Landmark, ChevronDown, LogOut, Copy, Check, ArrowUpRight, ArrowDownLeft, Shield, Coins } from "lucide-react";
+import { Menu, X, Wallet, User, Bot, CircuitBoard, Building2, Swords, Landmark, ChevronDown, LogOut, Copy, Check, ArrowUpRight, Shield, Coins } from "lucide-react";
+import { SiX as SiXIcon, SiDiscord } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
-const simulatedTxHistory = [
-  { type: "in", label: "Agent deployment reward", amount: "+250 ORB", time: "2m ago" },
-  { type: "out", label: "Compute lease payment", amount: "-18 ORB", time: "14m ago" },
-  { type: "in", label: "Task completion fee", amount: "+75 ORB", time: "1h ago" },
-  { type: "out", label: "Registry verification", amount: "-5 ORB", time: "3h ago" },
-];
 
 interface NavLink {
   label: string;
@@ -23,10 +18,11 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: "Platform",
+    label: "Protocol",
     links: [
       { label: "Overview", href: "/platform" },
       { label: "Payments", href: "/x402" },
+      { label: "Bridge", href: "/bridge" },
       { label: "Marketplace", href: "/marketplace" },
       { label: "Registry", href: "/registry" },
     ],
@@ -34,10 +30,11 @@ const navGroups: NavGroup[] = [
   {
     label: "Technology",
     links: [
-      { label: "Live Tracker", href: "/tracker" },
-      { label: "White Paper", href: "/whitepaper" },
+      { label: "Live ORBIT Tracker", href: "/tracker" },
       { label: "Research", href: "/research" },
+      { label: "Documents", href: "/developers" },
       { label: "Roadmap", href: "/roadmap" },
+      { label: "White Paper", href: "/whitepaper" },
       { label: "Status", href: "/status" },
     ],
   },
@@ -45,7 +42,9 @@ const navGroups: NavGroup[] = [
     label: "Token",
     links: [
       { label: "Overview", href: "/token" },
+      { label: "Treasury", href: "/treasury" },
       { label: "Tokenomics", href: "/token#supply" },
+      { label: "Revenue", href: "/treasury#revenue" },
       { label: "Utility", href: "/token#utility" },
       { label: "ORB-USD", href: "/token#stablecoin" },
     ],
@@ -54,9 +53,10 @@ const navGroups: NavGroup[] = [
     label: "Community",
     links: [
       { label: "Team", href: "/team" },
-      { label: "News", href: "/news" },
       { label: "Merchandise", href: "/merch" },
+      { label: "Content Studio", href: "/community" },
       { label: "Education", href: "/education" },
+      { label: "News", href: "/news" },
       { label: "FAQ", href: "/faq" },
     ],
   },
@@ -283,6 +283,9 @@ export function Navigation() {
                   <span className="font-display font-bold text-xl lg:text-2xl tracking-[0.15em] uppercase">
                     ORBIT
                   </span>
+                  <span className="text-[9px] tracking-[0.3em] uppercase text-orange-500/70 font-medium">
+                    Protocol
+                  </span>
                 </div>
               </div>
             </Link>
@@ -383,27 +386,10 @@ export function Navigation() {
                           </div>
                         </div>
 
-                        <div className="p-4 border-b border-border/30 max-h-48 overflow-y-auto">
+                        <div className="p-4 border-b border-border/30">
                           <span className="text-xs text-muted-foreground font-mono tracking-wider uppercase mb-3 block">Recent Activity</span>
-                          <div className="space-y-2">
-                            {simulatedTxHistory.map((tx, idx) => (
-                              <div key={idx} className="flex items-center gap-2.5" data-testid={`tx-history-${idx}`}>
-                                <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-orange-500/10`}>
-                                  {tx.type === "in" ? (
-                                    <ArrowDownLeft className="w-3 h-3 text-orange-500" />
-                                  ) : (
-                                    <ArrowUpRight className="w-3 h-3 text-orange-500" />
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-xs text-foreground truncate">{tx.label}</div>
-                                  <div className="text-[10px] text-muted-foreground">{tx.time}</div>
-                                </div>
-                                <span className={`font-mono text-xs flex-shrink-0 ${tx.type === "in" ? "text-orange-500" : "text-muted-foreground"}`}>
-                                  {tx.amount}
-                                </span>
-                              </div>
-                            ))}
+                          <div className="text-center py-3">
+                            <span className="text-xs text-muted-foreground">No activity yet</span>
                           </div>
                         </div>
 
@@ -458,6 +444,28 @@ export function Navigation() {
                   <span className="sm:hidden">Connect</span>
                 </button>
               )}
+
+              <div className="hidden lg:flex items-center gap-1">
+                <a
+                  href="https://twitter.com/orbitquantum"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-md text-white/40 hover:text-orange-500 transition-colors"
+                  data-testid="link-nav-x"
+                >
+                  <SiXIcon className="w-3.5 h-3.5" />
+                </a>
+                <a
+                  href="https://discord.gg/uswhCdpv"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-md text-white/40 hover:text-orange-500 transition-colors"
+                  data-testid="link-nav-discord"
+                >
+                  <SiDiscord className="w-3.5 h-3.5" />
+                </a>
+                <span className="font-mono text-[10px] text-orange-500/70 tracking-wider ml-1">$ORB</span>
+              </div>
 
               <Button
                 size="icon"

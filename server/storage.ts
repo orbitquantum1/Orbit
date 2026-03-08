@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type RegistryEntry, type InsertRegistryEntry, type Wallet, type InsertWallet, type Transaction, type InsertTransaction, type Task, type InsertTask, type IdentityDocument, type InsertIdentityDocument, type CapabilityToken, type InsertCapabilityToken, type Waitlist, type InsertWaitlist, users, registryEntries, wallets, transactions, tasks, identityDocuments, capabilityTokens, waitlist } from "@shared/schema";
+import { type User, type InsertUser, type RegistryEntry, type InsertRegistryEntry, type Wallet, type InsertWallet, type Transaction, type InsertTransaction, type Task, type InsertTask, type IdentityDocument, type InsertIdentityDocument, type CapabilityToken, type InsertCapabilityToken, type Waitlist, type InsertWaitlist, type TreasuryPosition, type InsertTreasuryPosition, type TreasuryRevenue, type InsertTreasuryRevenue, users, registryEntries, wallets, transactions, tasks, identityDocuments, capabilityTokens, waitlist, treasuryPositions, treasuryRevenue } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 
@@ -42,6 +42,12 @@ export interface IStorage {
   getWaitlistCount(): Promise<number>;
   getWaitlistByReferralCode(code: string): Promise<Waitlist | undefined>;
   getReferralCount(code: string): Promise<number>;
+  createTreasuryPosition(data: InsertTreasuryPosition): Promise<TreasuryPosition>;
+  getTreasuryPositions(): Promise<TreasuryPosition[]>;
+  updateTreasuryPosition(id: string, updates: Partial<TreasuryPosition>): Promise<TreasuryPosition>;
+  recordTreasuryRevenue(data: InsertTreasuryRevenue): Promise<TreasuryRevenue>;
+  getTreasuryRevenue(): Promise<TreasuryRevenue[]>;
+  getTreasuryWallet(): Promise<Wallet | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -245,9 +251,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addToWaitlist(data: InsertWaitlist): Promise<Waitlist> {
-    const code = Array.from({ length: 6 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 31)]).join("");
-    const [entry] = await db.insert(waitlist).values({ ...data, referralCode: code }).returning();
-    return entry;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const code = Array.from({ length: 6 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 31)]).join("");
+      try {
+        const [entry] = await db.insert(waitlist).values({ ...data, referralCode: code }).returning();
+        return entry;
+      } catch (err: any) {
+        if (err.code === "23505" && err.constraint?.includes("referral_code") && attempt < 4) continue;
+        throw err;
+      }
+    }
+    throw new Error("Failed to generate unique referral code");
   }
 
   async getWaitlistCount(): Promise<number> {
@@ -263,6 +277,34 @@ export class DatabaseStorage implements IStorage {
   async getReferralCount(code: string): Promise<number> {
     const [result] = await db.select({ count: sql<number>`count(*)` }).from(waitlist).where(eq(waitlist.referredBy, code));
     return Number(result.count);
+  }
+
+  async createTreasuryPosition(data: InsertTreasuryPosition): Promise<TreasuryPosition> {
+    const [position] = await db.insert(treasuryPositions).values(data).returning();
+    return position;
+  }
+
+  async getTreasuryPositions(): Promise<TreasuryPosition[]> {
+    return db.select().from(treasuryPositions).orderBy(desc(treasuryPositions.acquiredAt));
+  }
+
+  async updateTreasuryPosition(id: string, updates: Partial<TreasuryPosition>): Promise<TreasuryPosition> {
+    const [position] = await db.update(treasuryPositions).set(updates).where(eq(treasuryPositions.id, id)).returning();
+    return position;
+  }
+
+  async recordTreasuryRevenue(data: InsertTreasuryRevenue): Promise<TreasuryRevenue> {
+    const [revenue] = await db.insert(treasuryRevenue).values(data).returning();
+    return revenue;
+  }
+
+  async getTreasuryRevenue(): Promise<TreasuryRevenue[]> {
+    return db.select().from(treasuryRevenue).orderBy(desc(treasuryRevenue.recordedAt));
+  }
+
+  async getTreasuryWallet(): Promise<Wallet | undefined> {
+    const [wallet] = await db.select().from(wallets).where(eq(wallets.name, "ORBIT Protocol Treasury"));
+    return wallet;
   }
 }
 

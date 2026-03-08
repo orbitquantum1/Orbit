@@ -527,7 +527,7 @@ export default function X402() {
                   Build on X402.
                 </h2>
                 <p className="text-white/50 leading-relaxed mb-8">
-                  X402 is the payment protocol for the autonomous economy. Read the white paper for the complete technical specification, or explore the ORBIT platform to see how agents use X402 in production.
+                  X402 is the payment protocol for the autonomous economy. Read the white paper for the complete technical specification, or explore the ORBIT Protocol to see how agents use X402 in production.
                 </p>
                 <div className="flex items-center gap-3 flex-wrap">
                   <Link href="/whitepaper">

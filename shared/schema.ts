@@ -208,3 +208,45 @@ export type InsertIdentityDocument = z.infer<typeof insertIdentityDocumentSchema
 export type IdentityDocument = typeof identityDocuments.$inferSelect;
 export type InsertCapabilityToken = z.infer<typeof insertCapabilityTokenSchema>;
 export type CapabilityToken = typeof capabilityTokens.$inferSelect;
+
+export const treasuryPositions = pgTable("treasury_positions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tokenSymbol: text("token_symbol").notNull(),
+  tokenName: text("token_name").notNull(),
+  contractAddress: text("contract_address"),
+  network: text("network").default("base").notNull(),
+  chainId: integer("chain_id").default(8453).notNull(),
+  amount: text("amount").notNull(),
+  costBasis: text("cost_basis"),
+  category: text("category").notNull(),
+  status: text("status").default("active").notNull(),
+  acquiredAt: timestamp("acquired_at").defaultNow(),
+  notes: text("notes"),
+});
+
+export const treasuryRevenue = pgTable("treasury_revenue", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  source: text("source").notNull(),
+  stream: text("stream").notNull(),
+  amount: text("amount").notNull(),
+  currency: text("currency").default("ETH").notNull(),
+  txHash: text("tx_hash"),
+  fromAgent: text("from_agent"),
+  description: text("description"),
+  recordedAt: timestamp("recorded_at").defaultNow(),
+});
+
+export const insertTreasuryPositionSchema = createInsertSchema(treasuryPositions).omit({
+  id: true,
+  acquiredAt: true,
+});
+
+export const insertTreasuryRevenueSchema = createInsertSchema(treasuryRevenue).omit({
+  id: true,
+  recordedAt: true,
+});
+
+export type InsertTreasuryPosition = z.infer<typeof insertTreasuryPositionSchema>;
+export type TreasuryPosition = typeof treasuryPositions.$inferSelect;
+export type InsertTreasuryRevenue = z.infer<typeof insertTreasuryRevenueSchema>;
+export type TreasuryRevenue = typeof treasuryRevenue.$inferSelect;

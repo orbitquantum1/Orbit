@@ -7,6 +7,7 @@ import {
   ChevronDown, Layers, CircuitBoard, Truck, Atom, ShieldCheck, Cpu
 } from "lucide-react";
 import { useSEO } from "@/hooks/use-seo";
+import agentEconomyImg from "@assets/image_1772935706667.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -35,7 +36,7 @@ const topics: EducationTopic[] = [
     id: "ai-agents",
     title: "AI Agents",
     subtitle: "Autonomous software that reasons, plans, and acts",
-    image: "/images/agent-transaction.png",
+    image: agentEconomyImg,
     icon: Bot,
     sections: [
       {

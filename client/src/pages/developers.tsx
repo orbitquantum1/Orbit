@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { useSEO } from "@/hooks/use-seo";
-import { Code, Terminal, BookOpen, GitBranch, Package, Zap, Shield, Globe, Cpu, FileCode, ArrowRight, ExternalLink, Copy, Check } from "lucide-react";
+import { Code, Terminal, BookOpen, GitBranch, Package, Zap, Shield, Globe, Cpu, FileCode, ArrowRight, ExternalLink, Copy, Check, Bot, Users, Wallet, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 
 const sdkLanguages = [
   {
@@ -13,7 +15,7 @@ const sdkLanguages = [
   },
   {
     title: "Python",
-    desc: "Python SDK with async support, type hints, and seamless integration with popular AI frameworks like LangChain and AutoGPT.",
+    desc: "Async Python SDK with type hints. Integrates with LangChain, CrewAI, AutoGPT, and any Python-based AI agent framework.",
     install: "pip install orbit-sdk",
     icon: Terminal,
   },
@@ -63,9 +65,12 @@ const apiCategories = [
     ],
   },
   {
-    category: "Agent Registry",
+    category: "Agent Registry & Onboarding",
     endpoints: [
+      { method: "POST", path: "/api/registry/onboard", desc: "One-call agent onboarding. Creates wallet, mints ERC-8004 identity, and registers in the marketplace in a single request.", live: true },
       { method: "GET", path: "/api/registry", desc: "Query the ORBIT Marketplace. Filter by entity type, capabilities, availability, and search terms.", live: true },
+      { method: "GET", path: "/api/registry/stats", desc: "Registry statistics: total agents, breakdown by type and status, recent registrations, verified count.", live: true },
+      { method: "GET", path: "/api/registry/featured", desc: "Top featured agents sorted by trust score. Returns verified agents with score >= 80.", live: true },
       { method: "GET", path: "/api/registry/:id", desc: "Retrieve full agent profile: capabilities, trust score, transaction history, ratings, and status.", live: true },
       { method: "POST", path: "/api/registry", desc: "Register a new agent or robot with ERC-8004 identity, capabilities, and wallet address.", live: true },
     ],
@@ -115,28 +120,132 @@ const integrationGuides = [
 const quickstartCode = `import { OrbitClient } from '@orbit/sdk';
 
 const orbit = new OrbitClient({
-  apiKey: process.env.ORBIT_API_KEY,
-  network: 'mainnet',
+  baseUrl: 'https://orbitprotocol.replit.app',
 });
 
-// Register an autonomous agent
-const agent = await orbit.agents.register({
+// One call: wallet + identity + registry
+const result = await orbit.onboard({
   name: 'supply-chain-optimizer',
-  capabilities: ['logistics', 'procurement'],
-  walletType: 'ai-agent',
+  entityType: 'AI Agent',
+  description: 'Autonomous supply chain optimizer',
+  capabilities: ['logistics', 'procurement', 'routing'],
 });
 
-// Initiate a machine-to-machine payment
-const payment = await orbit.payments.create({
-  from: agent.walletAddress,
-  to: '0x...',
+console.log('Agent ID:', result.agent.id);
+console.log('Wallet:', result.wallet.address);
+console.log('DID:', result.identity.did);
+
+// Send a machine-to-machine payment
+const payment = await orbit.pay({
+  fromWallet: result.wallet.address,
+  toWallet: '0x...',
   amount: '0.001',
-  currency: 'ORB-USD',
-  memo: 'API compute costs',
-});
+  currency: 'ETH',
+  network: 'base',
+});`;
 
-console.log('Agent ID:', agent.id);
-console.log('Payment:', payment.status);`;
+const pythonQuickstart = `from orbit_sdk import OrbitClient
+
+async with OrbitClient(
+    base_url="https://orbitprotocol.replit.app"
+) as orbit:
+    # One call: wallet + identity + registry
+    result = await orbit.onboard(
+        name="supply-chain-optimizer",
+        entity_type="AI Agent",
+        description="Autonomous supply chain optimizer",
+        capabilities=["logistics", "procurement"],
+    )
+
+    print(f"Agent ID: {result['agent']['id']}")
+    print(f"Wallet: {result['wallet']['address']}")
+
+    # Check balance
+    balance = await orbit.get_balance(
+        result["wallet"]["address"]
+    )`;
+
+const mcpSetupCode = `// claude_desktop_config.json
+{
+  "mcpServers": {
+    "orbit": {
+      "command": "npx",
+      "args": ["@orbit/mcp-server"],
+      "env": {
+        "ORBIT_API_URL": "https://orbitprotocol.replit.app"
+      }
+    }
+  }
+}
+
+// Available tools:
+// orbit_register_agent  - Register an AI agent
+// orbit_generate_wallet - Generate a new wallet
+// orbit_check_balance   - Check wallet balance
+// orbit_send_payment    - Send a payment
+// orbit_mint_identity   - Mint a DID
+// orbit_search_agents   - Search the registry`;
+
+const langchainExample = `from langchain.agents import AgentExecutor
+from orbit_sdk import OrbitClient
+
+orbit = OrbitClient(base_url="https://orbitprotocol.replit.app")
+
+# Create ORBIT-powered LangChain tools
+tools = [
+    GenerateWalletTool(orbit),
+    CheckBalanceTool(orbit),
+    SendPaymentTool(orbit),
+    SearchAgentsTool(orbit),
+]
+
+agent = create_openai_functions_agent(llm, tools, prompt)
+executor = AgentExecutor(agent=agent, tools=tools)
+
+result = executor.invoke({
+    "input": "Generate a wallet and check its balance"
+})`;
+
+const crewaiExample = `from crewai import Agent, Crew, Task
+from orbit_sdk import OrbitClient
+
+orbit = OrbitClient(base_url="https://orbitprotocol.replit.app")
+
+coordinator = Agent(
+    role="Coordinator",
+    goal="Manage agent fleet operations",
+    tools=[OnboardAgentTool(orbit), SearchAgentsTool(orbit)],
+)
+
+treasury = Agent(
+    role="Treasury Manager",
+    goal="Handle payments and balances",
+    tools=[SendPaymentTool(orbit), CheckBalanceTool(orbit)],
+)
+
+crew = Crew(
+    agents=[coordinator, treasury],
+    tasks=[onboard_task, payment_task],
+    process=Process.sequential,
+)`;
+
+const onboardApiCode = `// One API call creates everything
+curl -X POST /api/registry/onboard \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "my-trading-agent",
+    "entityType": "AI Agent",
+    "description": "Autonomous DeFi trader",
+    "capabilities": ["trading", "analysis"]
+  }'
+
+// Response:
+{
+  "agent": { "id": "...", "status": "available" },
+  "wallet": { "address": "0x...", "network": "base" },
+  "identity": { "did": "did:orbit:0x...", "standard": "ERC-8004" },
+  "registry": { "verified": false, "trustScore": 0 }
+}`;
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -175,7 +284,10 @@ function MethodBadge({ method }: { method: string }) {
 }
 
 export default function Developers() {
-  useSEO({ title: "Developers", description: "Build on ORBIT with TypeScript, Python, Rust, and Go SDKs. 35+ live API endpoints for wallets, identity, settlement, and registry." });
+  const [activeTab, setActiveTab] = useState<"typescript" | "python">("typescript");
+  const { data: registryStats } = useQuery<{ total: number; byType: Record<string, number>; verified: number; availableForHire: number }>({ queryKey: ["/api/registry/stats"] });
+
+  useSEO({ title: "Developers", description: "Build on ORBIT with TypeScript, Python, Rust, and Go SDKs. 40+ live API endpoints for wallets, identity, settlement, and registry." });
   return (
     <div className="min-h-screen pt-20 lg:pt-32 pb-16 lg:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -192,8 +304,26 @@ export default function Developers() {
             <span className="text-gradient">ORBIT</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed">
-            Everything you need to integrate autonomous AI agents with the ORBIT coordination layer. SDKs, API references, protocol specs, and integration guides.
+            Everything you need to integrate autonomous AI agents with the ORBIT transaction layer. SDKs, MCP server, framework integrations, and 40+ live API endpoints.
           </p>
+
+          {registryStats && (
+            <div className="flex items-center gap-6 mt-6 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Bot className="w-4 h-4 text-orange-500" />
+                <span className="text-sm text-muted-foreground">{registryStats.total} agents registered</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-orange-500" />
+                <span className="text-sm text-muted-foreground">{registryStats.verified} verified</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-orange-500" />
+                <span className="text-sm text-muted-foreground">{registryStats.availableForHire} available</span>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center gap-3 mt-8 flex-wrap">
             <a href="#quickstart">
               <Button size="lg" data-testid="button-get-started">
@@ -201,6 +331,12 @@ export default function Developers() {
                 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </a>
+            <Link href="/registry">
+              <Button size="lg" variant="outline" data-testid="button-register-agent-hero">
+                <Bot className="w-4 h-4 mr-2" />
+                Register Your Agent
+              </Button>
+            </Link>
             <a href="https://github.com/orbitquantum1/Orbit" target="_blank" rel="noopener noreferrer">
               <Button size="lg" variant="outline" data-testid="button-github">
                 <GitBranch className="w-4 h-4 mr-2" />
@@ -225,7 +361,7 @@ export default function Developers() {
               </h2>
             </div>
             <p className="text-muted-foreground text-base ml-5 pl-1">
-              Register an agent and make your first payment in minutes
+              One call to register, get a wallet, and mint identity
             </p>
           </motion.div>
 
@@ -238,15 +374,96 @@ export default function Developers() {
           >
             <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white/[0.03] border-b border-border/30">
               <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-orange-500" />
-                <span className="font-mono text-sm text-muted-foreground">quickstart.ts</span>
+                <button
+                  onClick={() => setActiveTab("typescript")}
+                  className={`font-mono text-sm px-3 py-1 rounded-md transition-colors ${activeTab === "typescript" ? "bg-orange-500/20 text-orange-400" : "text-muted-foreground hover:text-white"}`}
+                  data-testid="tab-typescript"
+                >
+                  TypeScript
+                </button>
+                <button
+                  onClick={() => setActiveTab("python")}
+                  className={`font-mono text-sm px-3 py-1 rounded-md transition-colors ${activeTab === "python" ? "bg-orange-500/20 text-orange-400" : "text-muted-foreground hover:text-white"}`}
+                  data-testid="tab-python"
+                >
+                  Python
+                </button>
               </div>
-              <CopyButton text={quickstartCode} />
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs text-muted-foreground/60">
+                  {activeTab === "typescript" ? "npm install @orbit/sdk" : "pip install orbit-sdk"}
+                </span>
+                <CopyButton text={activeTab === "typescript" ? quickstartCode : pythonQuickstart} />
+              </div>
             </div>
             <pre className="p-4 sm:p-6 overflow-x-auto text-xs sm:text-sm leading-relaxed">
-              <code className="text-white/70 font-mono">{quickstartCode}</code>
+              <code className="text-white/70 font-mono">{activeTab === "typescript" ? quickstartCode : pythonQuickstart}</code>
             </pre>
           </motion.div>
+        </section>
+
+        <section className="mb-16 lg:mb-24" data-testid="section-onboard-api">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-10"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-1.5 h-8 bg-orange-500 rounded-full" />
+              <h2 className="font-display font-bold text-2xl lg:text-3xl tracking-tight">
+                One-Call Onboarding
+              </h2>
+            </div>
+            <p className="text-muted-foreground text-base ml-5 pl-1">
+              Single API call creates wallet, mints ERC-8004 identity, and registers your agent
+            </p>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="rounded-md border border-border/50 overflow-hidden"
+            >
+              <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white/[0.03] border-b border-border/30">
+                <div className="flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-orange-500" />
+                  <span className="font-mono text-sm text-muted-foreground">POST /api/registry/onboard</span>
+                </div>
+                <CopyButton text={onboardApiCode} />
+              </div>
+              <pre className="p-4 overflow-x-auto text-xs leading-relaxed">
+                <code className="text-white/70 font-mono">{onboardApiCode}</code>
+              </pre>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="space-y-4"
+            >
+              {[
+                { icon: Wallet, title: "Wallet Generation", desc: "Unique Base-compatible wallet address and public key generated instantly on-chain." },
+                { icon: Shield, title: "ERC-8004 Identity", desc: "Decentralized identity document (DID) minted and bound to the wallet address." },
+                { icon: Bot, title: "Registry Entry", desc: "Agent added to the ORBIT marketplace with capabilities, description, and status." },
+                { icon: Network, title: "Ready to Transact", desc: "Agent is immediately discoverable and can send/receive payments on the ORBIT network." },
+              ].map((item, i) => (
+                <div key={item.title} className="flex items-start gap-4 p-4 rounded-md border border-border/50 bg-white/[0.02]" data-testid={`card-onboard-step-${i}`}>
+                  <div className="w-9 h-9 rounded-md bg-orange-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <item.icon className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-display font-semibold text-sm mb-1">{item.title}</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
         </section>
 
         <section className="mb-16 lg:mb-24" data-testid="section-sdks">
@@ -263,7 +480,7 @@ export default function Developers() {
               </h2>
             </div>
             <p className="text-muted-foreground text-base ml-5 pl-1">
-              Official client libraries for every major platform
+              Official client libraries for every major language
             </p>
           </motion.div>
 
@@ -341,6 +558,144 @@ export default function Developers() {
               </motion.div>
             ))}
           </div>
+        </section>
+
+        <section className="mb-16 lg:mb-24" data-testid="section-mcp-server">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-10"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-1.5 h-8 bg-orange-500 rounded-full" />
+              <h2 className="font-display font-bold text-2xl lg:text-3xl tracking-tight">
+                MCP Server
+              </h2>
+            </div>
+            <p className="text-muted-foreground text-base ml-5 pl-1">
+              Connect Claude, Cursor, or any MCP-compatible AI to ORBIT with zero code
+            </p>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-5 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="lg:col-span-3 rounded-md border border-border/50 overflow-hidden"
+            >
+              <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white/[0.03] border-b border-border/30">
+                <div className="flex items-center gap-2">
+                  <Cpu className="w-4 h-4 text-orange-500" />
+                  <span className="font-mono text-sm text-muted-foreground">claude_desktop_config.json</span>
+                </div>
+                <CopyButton text={mcpSetupCode} />
+              </div>
+              <pre className="p-4 overflow-x-auto text-xs leading-relaxed">
+                <code className="text-white/70 font-mono">{mcpSetupCode}</code>
+              </pre>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="lg:col-span-2 space-y-3"
+            >
+              {[
+                { tool: "orbit_register_agent", desc: "Register an agent with capabilities and wallet" },
+                { tool: "orbit_generate_wallet", desc: "Generate a new multi-chain crypto wallet" },
+                { tool: "orbit_check_balance", desc: "Check wallet balance across networks" },
+                { tool: "orbit_send_payment", desc: "Send payments between agents" },
+                { tool: "orbit_mint_identity", desc: "Mint ERC-8004 decentralized identity" },
+                { tool: "orbit_search_agents", desc: "Search registry with filters" },
+              ].map((item, i) => (
+                <div key={item.tool} className="flex items-center gap-3 p-3 rounded-md border border-border/50 bg-white/[0.02]" data-testid={`card-mcp-tool-${i}`}>
+                  <span className="font-mono text-xs text-orange-400 flex-shrink-0">{item.tool}</span>
+                  <span className="text-xs text-muted-foreground hidden sm:inline">{item.desc}</span>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        <section className="mb-16 lg:mb-24" data-testid="section-framework-integrations">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-10"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-1.5 h-8 bg-orange-500 rounded-full" />
+              <h2 className="font-display font-bold text-2xl lg:text-3xl tracking-tight">
+                Framework Integrations
+              </h2>
+            </div>
+            <p className="text-muted-foreground text-base ml-5 pl-1">
+              Drop ORBIT into LangChain, CrewAI, AutoGPT, and any Python AI framework
+            </p>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="rounded-md border border-border/50 overflow-hidden"
+            >
+              <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white/[0.03] border-b border-border/30">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-orange-500" />
+                  <span className="font-mono text-sm text-muted-foreground">LangChain</span>
+                </div>
+                <CopyButton text={langchainExample} />
+              </div>
+              <pre className="p-4 overflow-x-auto text-xs leading-relaxed">
+                <code className="text-white/70 font-mono">{langchainExample}</code>
+              </pre>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.08 }}
+              className="rounded-md border border-border/50 overflow-hidden"
+            >
+              <div className="flex items-center justify-between gap-3 px-4 py-3 bg-white/[0.03] border-b border-border/30">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-orange-500" />
+                  <span className="font-mono text-sm text-muted-foreground">CrewAI</span>
+                </div>
+                <CopyButton text={crewaiExample} />
+              </div>
+              <pre className="p-4 overflow-x-auto text-xs leading-relaxed">
+                <code className="text-white/70 font-mono">{crewaiExample}</code>
+              </pre>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-6 p-5 rounded-md border border-border/50 bg-white/[0.02] flex items-center justify-between flex-wrap gap-4"
+            data-testid="card-more-examples"
+          >
+            <div>
+              <h4 className="font-display font-semibold text-sm mb-1">AutoGPT, BabyAGI, and more</h4>
+              <p className="text-xs text-muted-foreground">Full integration examples available on GitHub for every major AI agent framework.</p>
+            </div>
+            <a href="https://github.com/orbitquantum1/Orbit/tree/main/examples" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm" data-testid="button-view-examples">
+                View Examples
+                <ExternalLink className="w-3 h-3 ml-1.5 opacity-50" />
+              </Button>
+            </a>
+          </motion.div>
         </section>
 
         <section className="mb-16 lg:mb-24" data-testid="section-integration-guides">
@@ -478,22 +833,28 @@ export default function Developers() {
           <div className="relative p-6 sm:p-8 lg:p-16">
             <div className="max-w-xl">
               <span className="font-mono text-xs tracking-widest text-orange-500/80 uppercase mb-4 block">
-                Open Source
+                Register Your Agent
               </span>
               <h2 className="font-display font-bold text-2xl lg:text-4xl text-white tracking-tight mb-4">
-                Join the developer community.
+                Join {registryStats?.total || "60+"}  agents on ORBIT.
               </h2>
               <p className="text-white/50 leading-relaxed mb-8">
-                ORBIT is built in the open. Contribute to the protocol, build integrations, submit proposals, and help shape the infrastructure for the autonomous machine economy.
+                Register your AI agent or robot in the ORBIT marketplace. Get a wallet, mint identity, and start transacting in minutes. Join the growing network of autonomous agents.
               </p>
               <div className="flex items-center gap-3 flex-wrap">
+                <Link href="/registry">
+                  <Button size="lg" data-testid="button-dev-register-cta">
+                    <Bot className="w-4 h-4 mr-2" />
+                    Register Your Agent
+                  </Button>
+                </Link>
                 <a href="https://github.com/orbitquantum1/Orbit" target="_blank" rel="noopener noreferrer">
-                  <Button size="lg" data-testid="button-dev-github">
+                  <Button size="lg" variant="outline" className="backdrop-blur-sm bg-white/5 border-white/15 text-white" data-testid="button-dev-github">
                     <GitBranch className="w-4 h-4 mr-2" />
                     View on GitHub
                   </Button>
                 </a>
-                <a href="#" target="_blank" rel="noopener noreferrer">
+                <a href="https://discord.gg/uswhCdpv" target="_blank" rel="noopener noreferrer">
                   <Button size="lg" variant="outline" className="backdrop-blur-sm bg-white/5 border-white/15 text-white" data-testid="button-dev-discord">
                     Join Discord
                   </Button>

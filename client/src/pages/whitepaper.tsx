@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useSEO } from "@/hooks/use-seo";
 import { ShareButton } from "@/components/share-button";
-import { FileText, Shield, MessageSquare, DollarSign, Building2, Server, Satellite, Lock, Coins, BarChart3, Network, CreditCard, GitBranch } from "lucide-react";
+import { FileText, Shield, MessageSquare, DollarSign, Building2, Server, Satellite, Lock, Coins, BarChart3, Network, CreditCard, GitBranch, Download } from "lucide-react";
 
 const sections = [
   {
@@ -235,11 +235,19 @@ export default function WhitePaper() {
               <span className="w-1 h-1 rounded-full bg-white/20" />
               <span>ORBIT Foundation</span>
             </div>
-            <div className="mt-6">
+            <div className="mt-6 flex items-center gap-3 flex-wrap">
               <ShareButton
                 text="ORBIT: The transaction layer for AI agents and the robot economy. Quantum-safe. Censorship-resistant. Sovereign by design."
                 label="Share White Paper"
               />
+              <a
+                href="/api/downloads/whitepaper"
+                download
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-orange-500 text-black text-sm font-semibold hover:bg-orange-400 transition-colors"
+                data-testid="button-download-whitepaper"
+              >
+                <Download className="w-4 h-4" /> Download PDF
+              </a>
             </div>
           </div>
         </motion.div>

@@ -36,7 +36,7 @@ const contributorDomains = [
 ];
 
 export default function Team() {
-  useSEO({ title: "Team", description: "The people behind ORBIT. Anonymous founder with a $7.5B IPO exit. Global network of open-source contributors." });
+  useSEO({ title: "Team", description: "The people behind ORBIT. Anonymous founder with a $7.5B IPO. Global network of open-source contributors." });
   return (
     <div className="min-h-screen pt-20 lg:pt-32 pb-16 lg:pb-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -81,17 +81,17 @@ export default function Team() {
                       <h2 className="font-display font-bold text-xl lg:text-3xl text-white tracking-tight" data-testid="text-founder-heading">
                         Anonymous Founder
                       </h2>
-                      <span className="font-mono text-xs tracking-wider text-orange-500/80 uppercase">Sole Founder</span>
+                      <span className="font-mono text-xs tracking-wider text-orange-500/80 uppercase">Serial U.S. Founder</span>
                     </div>
                   </div>
                   <p className="text-white/60 leading-relaxed mb-6 max-w-2xl">
-                    Serial builder with two major exits. Previous IPO exit reached $7.5 Billion, and most recent token project achieved a $500 Million market cap. Prefers to remain anonymous, letting the protocol and its community speak for themselves.
+                    Serial U.S. founder. Previous IPO reached $7.5 Billion, and most recent token project achieved a $500 Million market cap. Prefers to remain anonymous, letting the ORBIT Protocol and its community speak for themselves.
                   </p>
                   <p className="text-white/50 leading-relaxed mb-8 max-w-2xl">
                     ORBIT represents the convergence of deep experience in enterprise-scale infrastructure, token economics, and the conviction that autonomous AI systems will need their own financial and identity layer to operate at planetary scale.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {["$7.5B IPO Exit", "$500M Token Project", "Enterprise Infrastructure", "Token Economics", "AI Systems"].map((tag) => (
+                    {["$7.5B IPO", "$500M Token Project", "Enterprise Infrastructure", "Token Economics", "AI Systems"].map((tag) => (
                       <span
                         key={tag}
                         className="text-xs font-mono text-orange-500/80 px-3 py-1.5 rounded-md bg-orange-500/5 border border-orange-500/10"
@@ -105,9 +105,9 @@ export default function Team() {
 
                 <div className="hidden lg:block space-y-4 min-w-[220px]">
                   <div className="p-4 rounded-md bg-white/[0.04] border border-white/10">
-                    <div className="font-mono text-xs text-white/40 uppercase tracking-wider mb-1">Previous IPO Exit</div>
+                    <div className="font-mono text-xs text-white/40 uppercase tracking-wider mb-1">Previous IPO</div>
                     <div className="font-display font-bold text-2xl text-white" data-testid="text-founder-exit">$7.5B</div>
-                    <div className="text-xs text-white/40">IPO Exit</div>
+                    <div className="text-xs text-white/40">IPO Valuation</div>
                   </div>
                   <div className="p-4 rounded-md bg-white/[0.04] border border-white/10">
                     <div className="font-mono text-xs text-white/40 uppercase tracking-wider mb-1">Last Token Project</div>

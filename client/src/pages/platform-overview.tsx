@@ -1,13 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useSEO } from "@/hooks/use-seo";
 import { Link } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight, Shield, Cpu, Globe, Lock,
   Wallet, Network, Bot, CreditCard, CheckCircle2,
   GitCommit, Database, Layers, ArrowLeftRight,
-  Building2, Fingerprint, Eye, BarChart3, ChevronDown
+  Building2, Fingerprint, Eye, BarChart3
 } from "lucide-react";
 import { SiStripe, SiVisa, SiMastercard, SiPaypal, SiGooglepay } from "react-icons/si";
 
@@ -60,216 +60,6 @@ const typeConfig: Record<ActivityType, { color: string; label: string }> = {
   release: { color: "text-orange-400", label: "Release" },
 };
 
-function generateHeatmapData() {
-  const now = new Date();
-  const dayMs = 86400000;
-  const totalDays = 91;
-  const startDate = new Date(now.getTime() - (totalDays - 1) * dayMs);
-  startDate.setHours(0, 0, 0, 0);
-
-  const seed = 42;
-  const seededRandom = (i: number) => {
-    const x = Math.sin(seed + i) * 10000;
-    return x - Math.floor(x);
-  };
-
-  const dayCounts: Array<{ date: string; count: number; types: Record<string, number> }> = [];
-  let maxCount = 0;
-  const totalByType: Record<string, number> = {};
-
-  for (let d = 0; d < totalDays; d++) {
-    const date = new Date(startDate.getTime() + d * dayMs);
-    const key = date.toISOString().split("T")[0];
-    const dayOfWeek = date.getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const baseCount = isWeekend ? Math.floor(seededRandom(d) * 3) : Math.floor(seededRandom(d * 7) * 6) + 1;
-    if (baseCount > maxCount) maxCount = baseCount;
-
-    const types: Record<string, number> = {};
-    const typeList: ActivityType[] = ["commit", "merge", "deploy", "test", "security", "infra", "protocol", "release"];
-    for (let t = 0; t < baseCount; t++) {
-      const typeIdx = Math.floor(seededRandom(d * 100 + t) * typeList.length);
-      const type = typeList[typeIdx];
-      types[type] = (types[type] || 0) + 1;
-      totalByType[type] = (totalByType[type] || 0) + 1;
-    }
-
-    dayCounts.push({ date: key, count: baseCount, types });
-  }
-
-  const dayStartIndex = new Date(dayCounts[0].date).getDay();
-  const allDays: Array<typeof dayCounts[0] | null> = [];
-  for (let i = 0; i < dayStartIndex; i++) allDays.push(null);
-  for (const d of dayCounts) allDays.push(d);
-
-  const weeks: Array<Array<typeof allDays[0]>> = [];
-  for (let i = 0; i < allDays.length; i += 7) {
-    const week = allDays.slice(i, i + 7);
-    while (week.length < 7) week.push(null);
-    weeks.push(week);
-  }
-
-  return { weeks, maxCount, totalByType };
-}
-
-function PlatformHeatmap() {
-  const [open, setOpen] = useState(false);
-  const { weeks, maxCount, totalByType } = useMemo(() => generateHeatmapData(), []);
-
-  const getIntensity = (count: number): string => {
-    if (count === 0) return "bg-white/[0.03]";
-    const ratio = count / maxCount;
-    if (ratio <= 0.25) return "bg-orange-500/20";
-    if (ratio <= 0.5) return "bg-orange-500/40";
-    if (ratio <= 0.75) return "bg-orange-500/60";
-    return "bg-orange-500/80";
-  };
-
-  const typeOrder: ActivityType[] = ["commit", "merge", "deploy", "test", "security", "infra", "protocol", "release"];
-  const totalAll = Object.values(totalByType).reduce((s, v) => s + v, 0) || 1;
-
-  const monthLabels = useMemo(() => {
-    const labels: Array<{ label: string; col: number }> = [];
-    let lastMonth = -1;
-    weeks.forEach((week, wi) => {
-      for (const day of week) {
-        if (day) {
-          const m = new Date(day.date).getMonth();
-          if (m !== lastMonth) {
-            lastMonth = m;
-            labels.push({ label: new Date(day.date).toLocaleDateString("en-US", { month: "short" }), col: wi });
-            break;
-          }
-        }
-      }
-    });
-    return labels;
-  }, [weeks]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.35 }}
-      className="mb-12"
-    >
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 rounded-md border border-white/5 bg-white/[0.02] hover:bg-white/[0.03] transition-colors"
-        data-testid="button-toggle-platform-heatmap"
-      >
-        <div className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-orange-500" />
-          <span className="font-mono text-xs text-white/50 uppercase tracking-wider">Activity Heatmap</span>
-        </div>
-        <ChevronDown className={`w-4 h-4 text-white/30 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="mt-3 border border-white/5 rounded-md bg-white/[0.01] p-4 sm:p-6">
-              <div className="mb-4">
-                <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider">Last 13 weeks</span>
-              </div>
-
-              <div className="overflow-x-auto pb-2">
-                <div className="inline-flex flex-col gap-0.5 min-w-fit">
-                  <div className="flex gap-0.5 ml-8 mb-1">
-                    {monthLabels.map((m, i) => (
-                      <span
-                        key={i}
-                        className="font-mono text-[9px] text-white/20"
-                        style={{ position: "relative", left: `${m.col * 14}px` }}
-                      >
-                        {m.label}
-                      </span>
-                    ))}
-                  </div>
-
-                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, di) => (
-                    <div key={day} className="flex items-center gap-0.5">
-                      <span className="font-mono text-[9px] text-white/15 w-7 text-right pr-1">
-                        {di % 2 === 1 ? day : ""}
-                      </span>
-                      {weeks.map((week, wi) => {
-                        const cell = week[di];
-                        if (!cell) return <div key={wi} className="w-3 h-3 rounded-sm" />;
-                        return (
-                          <div
-                            key={wi}
-                            className={`w-3 h-3 rounded-sm ${getIntensity(cell.count)} transition-colors`}
-                            title={`${cell.date}: ${cell.count} activities`}
-                          />
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-1.5 mt-3 ml-8">
-                  <span className="font-mono text-[9px] text-white/20">Less</span>
-                  {["bg-white/[0.03]", "bg-orange-500/20", "bg-orange-500/40", "bg-orange-500/60", "bg-orange-500/80"].map((c, i) => (
-                    <div key={i} className={`w-3 h-3 rounded-sm ${c}`} />
-                  ))}
-                  <span className="font-mono text-[9px] text-white/20">More</span>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-white/5">
-                <span className="font-mono text-[10px] text-white/30 uppercase tracking-wider block mb-3">Type Distribution</span>
-                <div className="flex gap-1 h-3 rounded-md overflow-hidden mb-3" data-testid="bar-platform-distribution">
-                  {typeOrder.map((type) => {
-                    const count = totalByType[type] || 0;
-                    const pct = (count / totalAll) * 100;
-                    if (pct < 1) return null;
-                    const cfg = typeConfig[type];
-                    const colorMap: Record<string, string> = {
-                      "text-orange-500": "bg-orange-500",
-                      "text-orange-400": "bg-orange-400",
-                      "text-orange-600": "bg-orange-600",
-                      "text-orange-300": "bg-orange-300",
-                      "text-gray-400": "bg-gray-400",
-                    };
-                    return (
-                      <div
-                        key={type}
-                        className={`${colorMap[cfg.color] || "bg-orange-500"} transition-all`}
-                        style={{ width: `${pct}%` }}
-                        title={`${cfg.label}: ${count} (${Math.round(pct)}%)`}
-                      />
-                    );
-                  })}
-                </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                  {typeOrder.map((type) => {
-                    const count = totalByType[type] || 0;
-                    if (count === 0) return null;
-                    const cfg = typeConfig[type];
-                    return (
-                      <div key={type} className="flex items-center gap-1.5">
-                        <div className={`w-2 h-2 rounded-sm ${cfg.color.replace("text-", "bg-")}`} />
-                        <span className="font-mono text-[10px] text-white/40">
-                          {cfg.label} <span className="text-white/20">{count}</span>
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-}
 
 export default function PlatformOverview() {
   useSEO({ title: "ORBIT Protocol", description: "The ORBIT Protocol stack: identity, wallets, payments, settlement, and coordination for autonomous AI agents and robots." });
@@ -457,7 +247,6 @@ export default function PlatformOverview() {
           </div>
         </motion.div>
 
-        <PlatformHeatmap />
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}

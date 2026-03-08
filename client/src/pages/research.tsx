@@ -20,7 +20,7 @@ const researchDomains = [
       },
       {
         title: "Autonomous Decision Systems",
-        desc: "AI agents capable of complex multi-step reasoning, negotiation, and real-time decision-making. Grok-powered reasoning engines with sub-agent orchestration and task decomposition.",
+        desc: "AI agents capable of complex multi-step reasoning, negotiation, and real-time decision-making. Autonomous reasoning engines with sub-agent orchestration and task decomposition.",
         icon: Brain,
       },
       {

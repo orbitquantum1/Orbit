@@ -1,0 +1,40 @@
+OpenMind, a company that describes itself as “unlocking machine agency at scale”, has closed a $20 million funding round led by Pantera Capital.
+
+By building open systems, shared intelligence, and decentralized coordination, their goal is to “connect all thinking machines”. In other words, the company wants to provide an operating system for robots, particularly humanoid robots.
+
+The company also received strong backing from industry leaders Ribbit, Coinbase Ventures, HSG, DCG, Pebblebed, Topology, Primitive Ventures, Lightspeed Faction, Anagram and notable angels.
+
+This raise brings OpenMind closer to making robotic intelligence open, interoperable, and as accessible as the internet.
+
+As other companies race to build humanoid hardware, OpenMind is focused on the missing layer: intelligence infrastructure.
+
+
+The company’s OM1 operating system is hardware-agnostic and designed to support the integration of intelligent machines into everyday life.
+
+Jan Liphardt, OpenMind CEO, says: “Today’s robots are trapped in single-vendor ecosystems that limit collaboration and can’t adapt to real-world complexity.”
+
+A Stanford professor, Liphardt has spent his career at the intersection of AI, biology and decentralized systems. “OpenMind is the connective tissue the robotics industry has been missing.”
+
+OpenMind also unveiled “Fabric” – a new protocol that gives intelligent machines a way to verify identity, share context, and coordinate securely across environments.
+
+As more robots come online, Fabric provides the trust layer that lets them work together – no matter who built them or where they operate. Robots using Fabric can understand where they are, who’s nearby and what to do next.
+
+Together, OM1 and Fabric create an open, secure coordination layer – allowing any robot to install intelligence, verify trust and act within a shared global network.
+
+While Tesla is building the body, OpenMind is building the collective mind, a shared intelligence layer that any robot, from a factory arm to a sidewalk courier, can plug into and learn from.
+
+The company is already working with robot companies around the world to bring this vision to life.
+
+Nihal Maunder, partner at Pantera Capital, says: “OpenMind’s approach feels obvious in hindsight.
+
+“If we want intelligent machines operating in open environments, we need an open intelligence network. OpenMind is doing for robotics what Linux and Ethereum did for software.”
+
+Pamela Vagata, founding partner at Pebblebed and a founding member of OpenAI, says: “OpenMind’s architecture is exactly what’s needed to scale safe, adaptable robotics. OpenMind combines deep technical rigor with a clear vision of what society actually needs.”
+
+Casey Caruso, managing partner at Topology and former investor at Paradigm, says: “Robotics is going to be the leading technology that bridges AI and the material world, unlocking trillions in market value. Openmind is pioneering the layer underpinning this unlock.”
+
+With this funding, the team will scale up its engineering force and collaborate with additional global partners to bring OM1 and Fabric into the world, from everything like autonomous transport to elder care to smart manufacturing.
+
+Liphardt says: “If AI is the brain and robotics is the body, coordination is the nervous system.
+
+“Without it, there’s no intelligence – just motion. We’re building the system that lets machines reason, act and evolve together.”

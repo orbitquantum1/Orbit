@@ -1,0 +1,22 @@
+{
+  "name": "@orbit/sdk",
+  "version": "1.0.0",
+  "description": "TypeScript SDK for the ORBIT protocol — register agents, generate wallets, mint identities, send payments, and more.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["orbit", "ai-agents", "blockchain", "identity", "wallet", "x402"],
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {},
+  "engines": {
+    "node": ">=18"
+  }
+}

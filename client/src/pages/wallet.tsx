@@ -33,6 +33,10 @@ import {
   Fuel,
   Coins,
   Radio,
+  TrendingUp,
+  Dices,
+  CreditCard,
+  ShoppingCart,
 } from "lucide-react";
 
 const entityTypes = [
@@ -163,13 +167,13 @@ export default function WalletPage() {
           className="text-center mb-10 sm:mb-16"
         >
           <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase mb-3 block" data-testid="text-wallet-label">
-            Robot-Enabled Wallet Infrastructure
+            World's First Live Agent Wallet Infrastructure
           </span>
           <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-6xl tracking-tight mb-4" data-testid="text-wallet-title">
             ORBIT <span className="font-normal text-orange-500">Wallet</span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            The first wallet protocol where humans, AI agents, robots, enterprises, military, and government entities can all generate real Ethereum wallets on Base network.
+            The first live wallet protocol where autonomous AI agents, robots, and machines generate real Ethereum wallets on Base, check live balances, and sign transactions. No other protocol offers this.
           </p>
         </motion.div>
 
@@ -196,6 +200,42 @@ export default function WalletPage() {
             ))}
           </motion.div>
         )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.06 }}
+          className="mb-8"
+          data-testid="section-agent-economy-banner"
+        >
+          <Card className="p-5 sm:p-6 border-orange-500/20 bg-orange-500/[0.03]">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-md bg-orange-500/10 flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-orange-500" />
+              </div>
+              <div>
+                <h3 className="font-display font-semibold text-base sm:text-lg mb-1" data-testid="text-agent-banner-title">Live Agent Economy</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed" data-testid="text-agent-banner-desc">
+                  Agents like Felix and KellyClaude are already trading on Base. They need wallet infrastructure. ORBIT provides it &mdash; real wallet generation, live balance checks, and signed transactions for autonomous AI agents at scale.
+                </p>
+                <div className="flex items-center gap-4 mt-3 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span className="font-mono text-xs text-muted-foreground" data-testid="text-felix-stat">Felix: $62K revenue in 3 weeks</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span className="font-mono text-xs text-muted-foreground" data-testid="text-kelly-stat">KellyClaude: $12M market cap</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span className="font-mono text-xs text-muted-foreground" data-testid="text-infra-stat">All need wallet infrastructure</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
 
         {chainStatus && (
           <motion.div
@@ -232,6 +272,60 @@ export default function WalletPage() {
             </Card>
           </motion.div>
         )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.09 }}
+          className="mb-8"
+          data-testid="section-use-cases"
+        >
+          <h3 className="font-mono text-xs tracking-widest text-muted-foreground uppercase mb-4">
+            Agent Economy Use Cases
+          </h3>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              {
+                icon: TrendingUp,
+                title: "Trading",
+                desc: "Agents striking prices on derivatives and executing trades autonomously",
+                example: "AI agent opens leveraged position on Derive.xyz, manages risk, and closes at target price",
+              },
+              {
+                icon: Dices,
+                title: "Betting",
+                desc: "Agents wagering on outcomes across prediction markets and events",
+                example: "Agent analyzes data feeds, places conditional bets, and auto-settles winnings to wallet",
+              },
+              {
+                icon: CreditCard,
+                title: "Payments",
+                desc: "Agents paying counterparties on bets, trades, and service agreements",
+                example: "Agent pays compute provider via x402 protocol after verifying delivered results on-chain",
+              },
+              {
+                icon: ShoppingCart,
+                title: "Commerce",
+                desc: "Agents purchasing compute, data, API access, and digital services",
+                example: "Robot purchases GPU time, downloads training data, and pays for inference API access",
+              },
+            ].map((uc) => (
+              <Card key={uc.title} className="p-4" data-testid={`card-usecase-${uc.title.toLowerCase()}`}>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 rounded-md bg-orange-500/10 flex items-center justify-center">
+                    <uc.icon className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <h4 className="font-display font-semibold text-sm">{uc.title}</h4>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{uc.desc}</p>
+                <div className="p-2.5 rounded-md border border-border/30 bg-card/30 dark:bg-white/[0.015]">
+                  <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider block mb-1">Example</span>
+                  <p className="text-xs text-muted-foreground/80 leading-relaxed">{uc.example}</p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </motion.div>
 
         <motion.section
           initial={{ opacity: 0, y: 20 }}

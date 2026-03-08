@@ -11,7 +11,7 @@ export function WaitlistForm({ variant = "default" }: { variant?: "default" | "c
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const ref = new URLSearchParams(window.location.search).get("ref");
+  const ref = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("ref") : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +36,7 @@ export function WaitlistForm({ variant = "default" }: { variant?: "default" | "c
     }
   };
 
-  const referralUrl = referralCode ? `${window.location.origin}?ref=${referralCode}` : "";
+  const referralUrl = referralCode && typeof window !== "undefined" ? `${window.location.origin}?ref=${referralCode}` : "";
 
   const copyReferral = () => {
     if (referralUrl) {
@@ -47,7 +47,7 @@ export function WaitlistForm({ variant = "default" }: { variant?: "default" | "c
   };
 
   const shareOnX = () => {
-    const text = `I just joined the $ORB waitlist. The transaction layer for AI agents and the robot economy is coming.`;
+    const text = `I just joined the @orbitquantum waitlist. The transaction layer for AI agents and the robot economy is coming. $ORB on @base via @bankrbot.`;
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(referralUrl)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };

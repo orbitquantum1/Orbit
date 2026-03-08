@@ -6,6 +6,8 @@ import { encrypt, decrypt, generateIdentityProof, generateCapabilityAttestation,
 import { generateWallet, getMultiChainBalances, getWalletBalance, signMessage, createTransferSignature, verifyTaskCompletion, getSupportedNetworks, broadcastTransaction, resolveENS, getERC20Balances, estimateGas, getChainStatus, getGasPrice, signMessageWithKey, verifyMessageSignature } from "./wallet-engine";
 import { generateIdentityDocument, verifyIdentityDocument, issueCapabilityToken, revokeCapabilityToken, getIdentityByAddress, resolveDID, createDID } from "./identity";
 import crypto from "crypto";
+import { getAgentStatus, updateAgentConfig, armAgent, deployAgent, pauseAgent, killAgent, agentExecuteTrade, getAgentDashboard, getAgentLog, clearAgentLog, getAgentActivity, startAutonomousLoop } from "./treasury-agent";
+import PDFDocument from "pdfkit";
 
 const paymentStore = new Map<string, {
   txId: string;
@@ -739,6 +741,63 @@ export async function registerRoutes(
     res.json(entries);
   });
 
+  app.get("/api/registry/stats", async (_req, res) => {
+    try {
+      const entries = await storage.getRegistryEntries();
+      const byType: Record<string, number> = {};
+      const byStatus: Record<string, number> = {};
+      for (const e of entries) {
+        byType[e.entityType] = (byType[e.entityType] || 0) + 1;
+        byStatus[e.status || "unknown"] = (byStatus[e.status || "unknown"] || 0) + 1;
+      }
+      const sorted = [...entries].sort((a, b) => {
+        const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return db - da;
+      });
+      res.json({
+        total: entries.length,
+        byType,
+        byStatus,
+        recentRegistrations: sorted.slice(0, 5).map(e => ({
+          id: e.id,
+          name: e.name,
+          entityType: e.entityType,
+          walletAddress: e.walletAddress,
+        })),
+        verified: entries.filter(e => e.verified).length,
+        availableForHire: entries.filter(e => e.availableForHire).length,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/registry/featured", async (_req, res) => {
+    try {
+      const entries = await storage.getRegistryEntries();
+      const featured = entries
+        .filter(e => e.verified && e.trustScore && e.trustScore >= 80)
+        .sort((a, b) => (b.trustScore || 0) - (a.trustScore || 0))
+        .slice(0, 12)
+        .map(e => ({
+          id: e.id,
+          name: e.name,
+          entityType: e.entityType,
+          description: e.description,
+          walletAddress: e.walletAddress,
+          trustScore: e.trustScore,
+          capabilities: e.capabilities,
+          hourlyRate: e.hourlyRate,
+          status: e.status,
+          manufacturer: e.manufacturer,
+        }));
+      res.json(featured);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/registry/:id", async (req, res) => {
     const entry = await storage.getRegistryEntry(req.params.id);
     if (!entry) {
@@ -812,6 +871,93 @@ export async function registerRoutes(
       });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/registry/onboard", async (req, res) => {
+    try {
+      const { name, entityType, description, capabilities, tags, manufacturer, hourlyRate } = req.body;
+      if (!name || typeof name !== "string" || name.trim().length < 2) {
+        return res.status(400).json({ error: "name is required (min 2 characters)" });
+      }
+      const type = entityType || "AI Agent";
+      const validTypes = ["Human", "AI Agent", "Robot", "Enterprise", "Military", "Government"];
+      if (!validTypes.includes(type)) {
+        return res.status(400).json({ error: `entityType must be one of: ${validTypes.join(", ")}` });
+      }
+
+      const generated = generateWallet(type, name.trim());
+
+      const walletData = await storage.createWallet({
+        entityType: type,
+        name: name.trim(),
+        address: generated.address,
+        encryptedPrivateKey: generated.encryptedPrivateKey,
+        publicKey: generated.publicKey,
+        network: generated.network,
+        chainId: generated.chainId,
+        status: "active",
+      });
+
+      let identityDoc: any = null;
+      try {
+        const { document } = await generateIdentityDocument(
+          generated.address,
+          type,
+          capabilities || []
+        );
+        identityDoc = document;
+      } catch {}
+
+      const registryData: any = {
+        entityType: type,
+        name: name.trim(),
+        walletAddress: generated.address,
+        description: description || `${name.trim()} - registered on ORBIT Protocol`,
+        capabilities: capabilities || [],
+        tags: tags || [],
+        manufacturer: manufacturer || "",
+        hourlyRate: hourlyRate ?? null,
+        trustScore: 50,
+        verified: true,
+        status: "available",
+        availableForHire: true,
+      };
+
+      const parsed = insertRegistrySchema.safeParse(registryData);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Validation failed", details: parsed.error.issues });
+      }
+
+      const entry = await storage.createRegistryEntry(parsed.data);
+
+      res.status(201).json({
+        success: true,
+        agent: {
+          id: entry.id,
+          name: entry.name,
+          entityType: entry.entityType,
+          status: entry.status,
+        },
+        wallet: {
+          address: walletData.address,
+          publicKey: walletData.publicKey,
+          network: walletData.network,
+          chainId: walletData.chainId,
+        },
+        identity: identityDoc ? {
+          did: identityDoc.id,
+          standard: "ERC-8004",
+          issuanceDate: identityDoc.issuanceDate,
+        } : null,
+        registry: {
+          id: entry.id,
+          verified: entry.verified,
+          trustScore: entry.trustScore,
+        },
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   });
 
@@ -1995,6 +2141,590 @@ export async function registerRoutes(
       const referralCount = await storage.getReferralCount(req.params.code);
       const totalCount = await storage.getWaitlistCount();
       res.json({ referralCount, position: totalCount });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/treasury/wallet", async (_req, res) => {
+    try {
+      let wallet = await storage.getTreasuryWallet();
+      if (!wallet) {
+        const generated = generateWallet("protocol", "ORBIT Protocol Treasury");
+        wallet = await storage.createWallet({
+          entityType: "protocol",
+          name: "ORBIT Protocol Treasury",
+          address: generated.address,
+          encryptedPrivateKey: generated.encryptedPrivateKey,
+          publicKey: generated.publicKey,
+          network: generated.network,
+          chainId: generated.chainId,
+          status: "active",
+        });
+
+        const agentPositions = [
+          { tokenSymbol: "FELIX", tokenName: "Felix AI Agent", category: "base-basket", amount: "0", notes: "Nat Eliason's autonomous AI CEO on Base. 1% buy/sell tax, $62K revenue in 3 weeks. Bankrbot launch." },
+          { tokenSymbol: "KELLYCLAUDE", tokenName: "KellyClaude AI", category: "base-basket", amount: "0", notes: "Austen Allred's AI assistant. $12M market cap via Bankrbot on Base." },
+          { tokenSymbol: "DRB", tokenName: "DRB Token", category: "base-basket", amount: "0", notes: "Base ecosystem token. Part of ORBIT treasury Base Basket strategy." },
+          { tokenSymbol: "ANTIHUNTER", tokenName: "AntiHunter", category: "base-basket", amount: "0", notes: "Base ecosystem token. Part of ORBIT treasury Base Basket strategy." },
+          { tokenSymbol: "ETH", tokenName: "Ethereum", category: "reserve", amount: "0", notes: "Core reserve asset for gas and operations on Base." },
+          { tokenSymbol: "USDC", tokenName: "USD Coin", category: "stablecoin", amount: "0", notes: "Stablecoin reserves for protocol stability." },
+        ];
+        for (const pos of agentPositions) {
+          await storage.createTreasuryPosition({
+            tokenSymbol: pos.tokenSymbol,
+            tokenName: pos.tokenName,
+            network: "base",
+            chainId: 8453,
+            amount: pos.amount,
+            category: pos.category,
+            status: "active",
+            notes: pos.notes,
+          });
+        }
+      }
+
+      let balances;
+      try {
+        balances = await getMultiChainBalances(wallet.encryptedPrivateKey);
+      } catch {
+        balances = {};
+      }
+
+      let erc20Balances;
+      try {
+        erc20Balances = await getERC20Balances(wallet.address);
+      } catch {
+        erc20Balances = [];
+      }
+
+      res.json({
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        network: wallet.network,
+        chainId: wallet.chainId,
+        status: wallet.status,
+        createdAt: wallet.createdAt,
+        balances,
+        erc20Balances,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/treasury/positions", async (_req, res) => {
+    try {
+      const positions = await storage.getTreasuryPositions();
+      res.json(positions);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/treasury/revenue", async (_req, res) => {
+    try {
+      const revenue = await storage.getTreasuryRevenue();
+
+      const streams = [
+        { stream: "Wallet Generation", fee: "$1 per wallet", projectedMonthly: "5,000", source: "All agents" },
+        { stream: "Transaction Fees", fee: "0.1% per tx", projectedMonthly: "12,500", source: "Felix, KellyClaude, all agents" },
+        { stream: "Identity Minting", fee: "$2 per mint", projectedMonthly: "2,000", source: "New agent registrations" },
+        { stream: "Marketplace Commissions", fee: "2.5% per sale", projectedMonthly: "8,750", source: "Agent services marketplace" },
+        { stream: "Token Trading Fees", fee: "1% buy/sell", projectedMonthly: "15,000", source: "$FELIX, $KELLYCLAUDE, future tokens" },
+        { stream: "Registry Fees", fee: "$5 per registration", projectedMonthly: "3,500", source: "Agent/robot registry" },
+        { stream: "Staking Yields", fee: "Variable APY", projectedMonthly: "7,200", source: "$ORB stakers" },
+      ];
+
+      res.json({ ledger: revenue, streams });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/treasury/overview", async (_req, res) => {
+    try {
+      const wallet = await storage.getTreasuryWallet();
+      const positions = await storage.getTreasuryPositions();
+      const revenue = await storage.getTreasuryRevenue();
+      const stats = await storage.getProtocolStats();
+
+      let balances;
+      if (wallet) {
+        try {
+          balances = await getMultiChainBalances(wallet.encryptedPrivateKey);
+        } catch {
+          balances = {};
+        }
+      }
+
+      const agentPositions = positions.filter(p => p.category === "base-basket" || p.category === "agent-economy");
+      const reservePositions = positions.filter(p => p.category === "reserve" || p.category === "stablecoin");
+
+      res.json({
+        wallet: wallet ? {
+          address: wallet.address,
+          network: wallet.network,
+          chainId: wallet.chainId,
+          status: wallet.status,
+          createdAt: wallet.createdAt,
+        } : null,
+        balances,
+        positions: { agents: agentPositions, reserves: reservePositions, all: positions },
+        revenueRecords: revenue.length,
+        protocolStats: stats,
+        revenueStreams: 7,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  const adminAuth = (req: any, res: any, next: any) => {
+    const key = req.headers["x-admin-key"];
+    if (key !== process.env.SESSION_SECRET) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    next();
+  };
+
+  app.post("/api/admin/treasury/position", adminAuth, async (req, res) => {
+    try {
+      const { tokenSymbol, tokenName, amount, category, network, chainId, contractAddress, notes, status } = req.body;
+      const position = await storage.createTreasuryPosition({
+        tokenSymbol,
+        tokenName,
+        amount: amount || "0",
+        category: category || "base-basket",
+        network: network || "base",
+        chainId: chainId || 8453,
+        contractAddress,
+        notes,
+        status: status || "active",
+      });
+      res.json(position);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/treasury/position/:id", adminAuth, async (req, res) => {
+    try {
+      const position = await storage.updateTreasuryPosition(req.params.id, req.body);
+      res.json(position);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/treasury/revenue", adminAuth, async (req, res) => {
+    try {
+      const { source, stream, amount, currency, txHash, fromAgent, description } = req.body;
+      const revenue = await storage.recordTreasuryRevenue({
+        source,
+        stream,
+        amount,
+        currency: currency || "ETH",
+        txHash,
+        fromAgent,
+        description,
+      });
+      res.json(revenue);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/admin/treasury/keys", adminAuth, async (_req, res) => {
+    try {
+      const wallet = await storage.getTreasuryWallet();
+      if (!wallet) return res.status(404).json({ error: "Treasury wallet not found" });
+      res.json({
+        address: wallet.address,
+        encryptedPrivateKey: wallet.encryptedPrivateKey,
+        publicKey: wallet.publicKey,
+        network: wallet.network,
+        chainId: wallet.chainId,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/treasury/broadcast", adminAuth, async (req, res) => {
+    try {
+      const wallet = await storage.getTreasuryWallet();
+      if (!wallet) return res.status(404).json({ error: "Treasury wallet not found" });
+      const { to, value, data, gasLimit } = req.body;
+      const result = await broadcastTransaction(wallet.encryptedPrivateKey, to, value, data, gasLimit);
+      await storage.recordTreasuryRevenue({
+        source: "treasury-transfer",
+        stream: "outbound",
+        amount: value,
+        currency: "ETH",
+        txHash: result.txHash,
+        description: `Transfer to ${to}`,
+      });
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/admin/agent/status", adminAuth, async (_req, res) => {
+    try {
+      res.json(await getAgentDashboard());
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/agent/arm", adminAuth, async (_req, res) => {
+    try {
+      res.json(armAgent());
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/agent/deploy", adminAuth, async (_req, res) => {
+    try {
+      res.json(deployAgent());
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/agent/pause", adminAuth, async (_req, res) => {
+    try {
+      res.json(pauseAgent());
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/agent/kill", adminAuth, async (_req, res) => {
+    try {
+      res.json(killAgent());
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/admin/agent/config", adminAuth, async (req, res) => {
+    try {
+      res.json(updateAgentConfig(req.body));
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/admin/agent/trade", adminAuth, async (req, res) => {
+    try {
+      const result = await agentExecuteTrade(req.body);
+      res.json(result);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/admin/agent/log", adminAuth, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      res.json(getAgentLog(limit));
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/admin/agent/log", adminAuth, async (_req, res) => {
+    try {
+      res.json(clearAgentLog());
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/agent/public-status", async (_req, res) => {
+    try {
+      const status = getAgentStatus();
+      res.json({
+        name: "AI Treasury Manager",
+        status: status.status,
+        mode: status.mode,
+        uptime: status.uptime,
+        totalTrades: status.totalTrades,
+        buybackPct: status.buybackPct,
+        revenueStreams: 11,
+        autonomousLoopActive: status.autonomousLoopActive,
+        cycleCount: status.cycleCount,
+        blockedOperations: status.blockedOperations,
+        rule: "Treasury funds are never distributed to individuals or community members",
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/agent/activity", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const activity = getAgentActivity(limit);
+      res.json(activity);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/downloads/whitepaper", async (_req, res) => {
+    try {
+      const doc = new PDFDocument({ size: "A4", margin: 60 });
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", "attachment; filename=ORBIT_Protocol_Whitepaper.pdf");
+      doc.pipe(res);
+
+      const orange = "#f97316";
+      const darkBg = "#0a0a0a";
+      const white = "#ffffff";
+      const gray = "#999999";
+
+      doc.rect(0, 0, doc.page.width, doc.page.height).fill(darkBg);
+      doc.rect(0, 0, doc.page.width, 6).fill(orange);
+
+      doc.fillColor(orange).fontSize(32).font("Helvetica-Bold").text("ORBIT", 60, 80);
+      doc.fillColor(white).fontSize(14).font("Helvetica").text("PROTOCOL", 175, 92);
+
+      doc.fillColor(white).fontSize(22).font("Helvetica-Bold").text("The Transaction Layer for AI Agents", 60, 160);
+      doc.fontSize(22).text("& The Robot Economy", 60, 190);
+
+      doc.fillColor(gray).fontSize(10).font("Helvetica").text("White Paper v1.0  |  March 2026  |  ORBIT Foundation", 60, 240);
+
+      doc.rect(60, 270, doc.page.width - 120, 1).fill(orange);
+
+      const sections = [
+        { title: "Abstract", content: "AI agents and robots will outnumber people. As organizations deploy thousands, then millions, then billions of autonomous agents and robots across enterprises, supply chains, financial systems, infrastructure networks, and space-based systems, every single one of them will need identity, wallets, payments, and registry functionality.\n\nORBIT provides the foundational transaction and coordination layer for the AI agent and robotics-driven economy, where autonomous systems identify, verify, transact, and collaborate at scale." },
+        { title: "1. Introduction", content: "The emergence of artificial intelligence represents a new phase of digital infrastructure evolution. Rather than merely assisting humans, AI systems are increasingly capable of operating as autonomous agents that execute workflows, manage systems, and interact with other agents.\n\nAs these agents proliferate across corporate environments, supply chains, financial systems, and infrastructure networks, a new coordination layer becomes necessary. ORBIT is designed to address this need." },
+        { title: "2. The Rise of Autonomous AI Agents", content: "Modern AI agents can analyze data, make decisions, execute tasks, and interact with external systems. Organizations deploy agents for financial analysis, supply chain optimization, procurement, cybersecurity monitoring, cloud infrastructure management, logistics coordination, and customer service operations.\n\nWithout standardized frameworks for identity, communication, and economic interaction, the growth of agent-based systems risks becoming fragmented and insecure." },
+        { title: "3. The ORBIT Protocol", content: "The ORBIT protocol is designed as a coordination framework that enables autonomous agents to operate within trusted digital environments. The protocol introduces foundational layers for authentication, secure communication, economic transactions, and programmable workflows." },
+        { title: "4. Agent Identity", content: "ORBIT assigns each agent a cryptographically secure identity via ERC-8004 that can be verified by other participants. These identities allow organizations to deploy agent fleets while maintaining governance controls and compliance requirements." },
+        { title: "5. Agent Communication", content: "ORBIT provides standardized communication protocols that allow agents to exchange information, negotiate tasks, and coordinate activities across organizations while maintaining secure and verifiable interaction channels." },
+        { title: "6. Economic Settlement", content: "ORBIT introduces a programmable economic layer that enables machine-to-machine financial settlement. Agents use the ORBIT token to execute transactions related to services, infrastructure usage, data access, or workflow execution." },
+        { title: "7. Workflow Automation", content: "ORBIT allows agents to operate across complex enterprise environments, initiating and executing tasks within corporate systems such as ERP, financial accounting, supply chain management, cloud infrastructure, and data analytics platforms." },
+        { title: "8. Enterprise Integration", content: "The protocol integrates with widely used corporate platforms and cloud environments through standardized APIs and secure integration frameworks, enabling gradual adoption across enterprise environments." },
+        { title: "9. Infrastructure Coordination", content: "AI agents on the protocol can manage cloud computing resources, telecommunications networks, logistics systems, energy grids, robotics fleets, and satellite communication networks." },
+        { title: "10. Space Infrastructure", content: "ORBIT provides a framework for autonomous coordination across space infrastructure networks. Agents can manage communication bandwidth, satellite positioning, mission logistics, and resource allocation across distributed orbital systems." },
+        { title: "11. Quantum-Resilient Cryptography", content: "ORBIT supports post-quantum cryptographic frameworks including CRYSTALS-Kyber, CRYSTALS-Dilithium, SPHINCS+, Classic McEliece, and hybrid cryptography combining classical and post-quantum algorithms." },
+        { title: "12. Token Utility", content: "The ORBIT token ($ORB) functions as the economic and coordination asset. Key functions: agent transaction settlement, network coordination fees, agent deployment provisioning, security staking, and protocol governance." },
+        { title: "13. Revenue Model", content: "Revenue streams: wallet generation ($1), transaction fees (0.1%), identity minting ($2), marketplace commissions (2.5%), token trading fees (1% buy/sell), registry fees ($5), staking yields, API access fees, cross-chain bridge fees, agent deployment hosting, and premium analytics." },
+        { title: "14. Agentic Commerce Standards", content: "ORBIT defines agentic commerce primitives: Discovery (machine-readable service descriptors), Negotiation (structured proposals), Escrow and Verification (smart contract escrow), and Reputation (on-chain trust scores)." },
+        { title: "15. Payment Network Integration", content: "ORBIT bridges crypto-native agent payments with traditional financial networks including Stripe, Visa/Mastercard, PayPal, Google Pay/Apple Pay, and ACH/Wire transfers. ORB-USD stablecoin acts as the bridge asset." },
+        { title: "16. Sub-Agent Orchestration", content: "ORBIT provides infrastructure for agents to delegate work to other agents through delegation, payment chains, capability routing, and recursive orchestration." },
+        { title: "17. Decentralized Autonomy", content: "ORBIT is built on three non-negotiable commitments: quantum-safe transactions secured with post-quantum cryptographic primitives, decentralization from government currency censorship and surveillance, and human-supporting systems without weaponization or surveillance." },
+        { title: "Long-Term Vision", content: "ORBIT's long-term vision is to support a global machine economy in which autonomous systems optimize workflows, manage infrastructure, and conduct economic activity across industries, enterprises, and planetary-scale networks." },
+      ];
+
+      let yPos = 300;
+      for (const section of sections) {
+        if (yPos > doc.page.height - 150) {
+          doc.addPage();
+          doc.rect(0, 0, doc.page.width, doc.page.height).fill(darkBg);
+          doc.rect(0, 0, doc.page.width, 3).fill(orange);
+          yPos = 50;
+        }
+
+        doc.fillColor(orange).fontSize(14).font("Helvetica-Bold").text(section.title, 60, yPos);
+        yPos += 22;
+
+        doc.fillColor("#cccccc").fontSize(9.5).font("Helvetica");
+        const textHeight = doc.heightOfString(section.content, { width: doc.page.width - 120, lineGap: 4 });
+
+        if (yPos + textHeight > doc.page.height - 60) {
+          doc.addPage();
+          doc.rect(0, 0, doc.page.width, doc.page.height).fill(darkBg);
+          doc.rect(0, 0, doc.page.width, 3).fill(orange);
+          yPos = 50;
+        }
+
+        doc.text(section.content, 60, yPos, { width: doc.page.width - 120, lineGap: 4 });
+        yPos += textHeight + 24;
+      }
+
+      doc.addPage();
+      doc.rect(0, 0, doc.page.width, doc.page.height).fill(darkBg);
+      doc.rect(0, 0, doc.page.width, 3).fill(orange);
+      doc.fillColor(orange).fontSize(10).font("Helvetica-Bold").text("ORBIT PROTOCOL", 60, doc.page.height - 80);
+      doc.fillColor(gray).fontSize(8).font("Helvetica").text("orbitprotocol.io  |  The Transaction Layer for AI Agents & The Robot Economy", 60, doc.page.height - 65);
+      doc.fillColor(gray).text("This document is for informational purposes only. It does not constitute financial advice or a solicitation to purchase tokens.", 60, doc.page.height - 50);
+
+      doc.end();
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/downloads/tokenomics", async (_req, res) => {
+    try {
+      const doc = new PDFDocument({ size: "A4", margin: 60 });
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", "attachment; filename=ORBIT_Tokenomics.pdf");
+      doc.pipe(res);
+
+      const orange = "#f97316";
+      const darkBg = "#0a0a0a";
+      const white = "#ffffff";
+      const gray = "#999999";
+
+      doc.rect(0, 0, doc.page.width, doc.page.height).fill(darkBg);
+      doc.rect(0, 0, doc.page.width, 6).fill(orange);
+
+      doc.fillColor(orange).fontSize(32).font("Helvetica-Bold").text("ORBIT", 60, 80);
+      doc.fillColor(white).fontSize(14).font("Helvetica").text("TOKENOMICS", 175, 92);
+
+      doc.fillColor(white).fontSize(22).font("Helvetica-Bold").text("$ORB Token Economics", 60, 160);
+      doc.fillColor(gray).fontSize(10).font("Helvetica").text("March 2026  |  Base (Chain 8453)  |  Fair Launch via Bankrbot", 60, 200);
+
+      doc.rect(60, 230, doc.page.width - 120, 1).fill(orange);
+
+      doc.fillColor(orange).fontSize(14).font("Helvetica-Bold").text("Token Overview", 60, 260);
+      doc.fillColor("#cccccc").fontSize(10).font("Helvetica");
+      const overview = [
+        ["Token Name", "ORBIT Protocol"],
+        ["Ticker", "$ORB"],
+        ["Total Supply", "100,000,000,000 (100 Billion)"],
+        ["Chain", "Base (Chain ID 8453)"],
+        ["Launch Platform", "Bankrbot"],
+        ["Launch Type", "100% Fair Launch"],
+        ["Team Allocation", "None (0%)"],
+        ["VC Allocation", "None (0%)"],
+        ["Presale", "None"],
+        ["Buy/Sell Tax", "1%"],
+      ];
+
+      let y = 285;
+      for (const [key, val] of overview) {
+        doc.fillColor(gray).text(key, 60, y);
+        doc.fillColor(white).text(val, 250, y);
+        y += 18;
+      }
+
+      y += 15;
+      doc.fillColor(orange).fontSize(14).font("Helvetica-Bold").text("Fair Launch Principles", 60, y);
+      y += 25;
+      doc.fillColor("#cccccc").fontSize(9.5).font("Helvetica");
+      const fairLaunch = "All 100 billion $ORB tokens enter the open market via Bankrbot on Base. There is no presale, no venture capital allocation, no team allocation, and no insider rounds. Every token is available on the open market from day one. This ensures complete fairness and eliminates the risk of insider dumping or VC unlock pressure.";
+      doc.text(fairLaunch, 60, y, { width: doc.page.width - 120, lineGap: 4 });
+      y += doc.heightOfString(fairLaunch, { width: doc.page.width - 120, lineGap: 4 }) + 20;
+
+      doc.fillColor(orange).fontSize(14).font("Helvetica-Bold").text("Treasury Allocation Strategy", 60, y);
+      y += 25;
+      const allocations = [
+        { name: "Buy, Hold and Burn", pct: "45%", desc: "Market-buy $ORB and permanently burn to reduce circulating supply" },
+        { name: "ORBIT Vault Positions", pct: "20%", desc: "Long-hold positions across 13 vault tokens including ETH, BTC, POL" },
+        { name: "Active Trading and Bots", pct: "15%", desc: "Automated trading across digital assets and prediction markets" },
+        { name: "Research and Grants", pct: "10%", desc: "Equity positions in accelerated ventures, quantum research, bot R&D" },
+        { name: "DeFi Yield Strategies", pct: "10%", desc: "Top bearing yields across DeFi protocols on Base and beyond" },
+      ];
+
+      for (const alloc of allocations) {
+        doc.fillColor(orange).fontSize(10).font("Helvetica-Bold").text(`${alloc.pct}  ${alloc.name}`, 60, y);
+        y += 15;
+        doc.fillColor("#cccccc").fontSize(9).font("Helvetica").text(alloc.desc, 80, y, { width: doc.page.width - 140 });
+        y += 18;
+      }
+
+      y += 15;
+      doc.fillColor(orange).fontSize(14).font("Helvetica-Bold").text("Revenue Streams", 60, y);
+      y += 25;
+      const streams = [
+        "Wallet Generation: $1 per wallet",
+        "Transaction Fees: 0.1% per transaction",
+        "Identity Minting: $2 per ERC-8004 mint",
+        "Marketplace Commissions: 2.5% per sale",
+        "Token Trading Fees: 1% buy/sell tax",
+        "Registry Fees: $5 per registration",
+        "Staking Yields: Variable APY",
+        "API Access Fees: $0.01 per call",
+        "Cross-chain Bridge Fees: 0.15% per bridge",
+        "Agent Deployment Hosting: $10/mo per agent",
+        "Premium Analytics: $25/mo",
+      ];
+
+      for (const stream of streams) {
+        doc.fillColor("#cccccc").fontSize(9).font("Helvetica").text(`  ${stream}`, 60, y);
+        y += 15;
+        if (y > doc.page.height - 100) {
+          doc.addPage();
+          doc.rect(0, 0, doc.page.width, doc.page.height).fill(darkBg);
+          doc.rect(0, 0, doc.page.width, 3).fill(orange);
+          y = 50;
+        }
+      }
+
+      y += 15;
+      doc.fillColor(orange).fontSize(14).font("Helvetica-Bold").text("ORBIT Vault (13 Tokens)", 60, y);
+      y += 25;
+      const vaultTokens = [
+        "$ORB (ORBIT Protocol) - Protocol native token, 1% buy/sell tax",
+        "$ETH (Ethereum) - Core reserve asset, gas and operations",
+        "$BTC (Bitcoin) - Store of value, inflation hedge, portfolio stability",
+        "$POL (Polygon) - L2 infrastructure, multi-chain expansion",
+        "$FELIX (Felix AI Agent) - Autonomous AI CEO on Base",
+        "$KELLYCLAUDE (KellyClaude AI) - AI executive assistant",
+        "$DRB (DRB Token) - Base ecosystem cross-protocol liquidity",
+        "$ANTIHUNTER (AntiHunter) - AI and decentralized intelligence",
+        "$BANKR (Bankr) - Fair launch infrastructure",
+        "$BNKRWALLET (Bankr Wallet) - Wallet infrastructure",
+        "$CLAWD (Clawd) - Autonomous agent ecosystem",
+      ];
+
+      for (const token of vaultTokens) {
+        doc.fillColor("#cccccc").fontSize(9).font("Helvetica").text(`  ${token}`, 60, y, { width: doc.page.width - 120 });
+        y += 15;
+        if (y > doc.page.height - 80) {
+          doc.addPage();
+          doc.rect(0, 0, doc.page.width, doc.page.height).fill(darkBg);
+          doc.rect(0, 0, doc.page.width, 3).fill(orange);
+          y = 50;
+        }
+      }
+
+      y += 15;
+      doc.fillColor(orange).fontSize(14).font("Helvetica-Bold").text("AI Treasury Manager", 60, y);
+      y += 25;
+      doc.fillColor("#cccccc").fontSize(9.5).font("Helvetica");
+      const agentDesc = "The ORBIT Treasury is governed entirely by the AI Treasury Manager, an autonomous agent that operates 24/7. It continuously scans for top-performing trading bots, investment opportunities, tokens, prediction markets, and DeFi yield strategies. All grants are structured as equity positions in accelerated ventures, ensuring the treasury retains long-term upside. The agent is hardened against prompt injection attacks, operates with anti-reentrancy locks, daily trade limits, and volume caps. Funds are never distributed to individuals. All actions are on-chain and verifiable on Basescan.";
+      doc.text(agentDesc, 60, y, { width: doc.page.width - 120, lineGap: 4 });
+
+      doc.addPage();
+      doc.rect(0, 0, doc.page.width, doc.page.height).fill(darkBg);
+      doc.rect(0, 0, doc.page.width, 3).fill(orange);
+      doc.fillColor(orange).fontSize(10).font("Helvetica-Bold").text("ORBIT PROTOCOL", 60, doc.page.height - 80);
+      doc.fillColor(gray).fontSize(8).font("Helvetica").text("orbitprotocol.io  |  $ORB Token Economics", 60, doc.page.height - 65);
+      doc.fillColor(gray).text("This document is for informational purposes only. It does not constitute financial advice or a solicitation to purchase tokens.", 60, doc.page.height - 50);
+
+      doc.end();
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/imgflip/memes", async (_req, res) => {
+    try {
+      const response = await fetch("https://api.imgflip.com/get_memes");
+      const data = await response.json();
+      if (data.success) {
+        const filtered = data.data.memes.slice(0, 48).map((m: any) => ({
+          id: m.id,
+          name: m.name,
+          url: m.url,
+          width: m.width,
+          height: m.height,
+          box_count: m.box_count,
+        }));
+        res.json(filtered);
+      } else {
+        res.status(500).json({ error: "Failed to fetch memes" });
+      }
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

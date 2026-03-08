@@ -16,6 +16,7 @@ export function Footer() {
               </div>
               <div className="flex flex-col leading-none">
                 <span className="font-display font-bold text-lg tracking-[0.15em] uppercase">ORBIT</span>
+                <span className="text-[9px] tracking-[0.3em] uppercase text-orange-500/70 font-medium">Protocol</span>
                               </div>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
@@ -56,7 +57,7 @@ export function Footer() {
                 { label: "Agent Wallet", href: "" },
                 { label: "X402 Payments", href: "/x402" },
                 { label: "ERC-8004 Identity", href: "" },
-                { label: "Grok Integration", href: "" },
+                { label: "Agent Framework", href: "" },
               ].map((item) => (
                 <li key={item.label}>
                   {item.href ? (
@@ -89,10 +90,10 @@ export function Footer() {
               </li>
             </ul>
             <div className="flex items-center gap-3 flex-wrap">
-              <a href="#" className="w-11 h-11 sm:w-9 sm:h-9 rounded-md bg-card dark:bg-white/5 border border-border/50 flex items-center justify-center text-muted-foreground transition-colors" data-testid="link-twitter">
+              <a href="https://x.com/orbitquantum" target="_blank" rel="noopener noreferrer" className="w-11 h-11 sm:w-9 sm:h-9 rounded-md bg-card dark:bg-white/5 border border-border/50 flex items-center justify-center text-muted-foreground transition-colors" data-testid="link-twitter">
                 <SiX className="w-4 h-4" />
               </a>
-              <a href="#" className="w-11 h-11 sm:w-9 sm:h-9 rounded-md bg-card dark:bg-white/5 border border-border/50 flex items-center justify-center text-muted-foreground transition-colors" data-testid="link-discord">
+              <a href="https://discord.gg/uswhCdpv" target="_blank" rel="noopener noreferrer" className="w-11 h-11 sm:w-9 sm:h-9 rounded-md bg-card dark:bg-white/5 border border-border/50 flex items-center justify-center text-muted-foreground transition-colors" data-testid="link-discord">
                 <SiDiscord className="w-4 h-4" />
               </a>
               <a href="https://github.com/orbitquantum1/Orbit" target="_blank" rel="noopener noreferrer" className="w-11 h-11 sm:w-9 sm:h-9 rounded-md bg-card dark:bg-white/5 border border-border/50 flex items-center justify-center text-muted-foreground transition-colors" data-testid="link-github">
